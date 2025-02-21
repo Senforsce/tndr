@@ -18,9 +18,12 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/senforsce/level0/generator"
+	tf "github.com/senforsce/level0/templatefile"
+
 	"github.com/senforsce/tndr/cmd/t1/visualize"
-	"github.com/senforsce/tndr/generator"
-	"github.com/senforsce/tndr/parser/v2"
+	"github.com/senforsce/toolbelt/sourcemap"
+	"github.com/senforsce/toolbelt/templatefile"
 )
 
 func NewFSEventHandler(
@@ -196,8 +199,10 @@ func (h *FSEventHandler) UpsertHash(fileName string, hash [sha256.Size]byte) (up
 
 // generate Go code for a single template.
 // If a basePath is provided, the filename included in error messages is relative to it.
-func (h *FSEventHandler) generate(ctx context.Context, fileName string) (goUpdated, textUpdated bool, diagnostics []parser.Diagnostic, err error) {
-	t, err := parser.Parse(fileName)
+func (h *FSEventHandler) generate(ctx context.Context, fileName string) (goUpdated, textUpdated bool, diagnostics []templatefile.Diagnostic, err error) {
+	tfp := tf.NewTemplateFileParser("main")
+	t, err := templatefile.ReadByNameAndParsers(fileName, tfp, tf.TemplateNodeParserList)
+
 	if err != nil {
 		return false, false, nil, fmt.Errorf("%s parsing error: %w", fileName, err)
 	}
@@ -248,7 +253,7 @@ func (h *FSEventHandler) generate(ctx context.Context, fileName string) (goUpdat
 		}
 	}
 
-	parsedDiagnostics, err := parser.Diagnose(t)
+	parsedDiagnostics, err := templatefile.Diagnose(t)
 	if err != nil {
 		return goUpdated, textUpdated, nil, fmt.Errorf("%s diagnostics error: %w", fileName, err)
 	}
@@ -262,14 +267,14 @@ func (h *FSEventHandler) generate(ctx context.Context, fileName string) (goUpdat
 
 // Takes an error from the formatter and attempts to convert the positions reported in the target file to their positions
 // in the source file.
-func remapErrorList(err error, sourceMap *parser.SourceMap, fileName string, targetFileName string) error {
+func remapErrorList(err error, sourceMap *sourcemap.SourceMap, fileName string, targetFileName string) error {
 	list, ok := err.(scanner.ErrorList)
 	if !ok || len(list) == 0 {
 		return err
 	}
 	for i, e := range list {
 		// The positions in the source map are off by one line because of the package definition.
-		srcPos, ok := sourceMap.SourcePositionFromTarget(uint32(e.Pos.Line-1), uint32(e.Pos.Column))
+		srcPos, ok := sourceMap.SourcePositionFromTarget(int(e.Pos.Line-1), int(e.Pos.Column))
 		if !ok {
 			continue
 		}
@@ -283,7 +288,7 @@ func remapErrorList(err error, sourceMap *parser.SourceMap, fileName string, tar
 	return list
 }
 
-func generateSourceMapVisualisation(ctx context.Context, t1FileName, goFileName string, sourceMap *parser.SourceMap) error {
+func generateSourceMapVisualisation(ctx context.Context, t1FileName, goFileName string, sourceMap *sourcemap.SourceMap) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -307,7 +312,7 @@ func generateSourceMapVisualisation(ctx context.Context, t1FileName, goFileName 
 		return t1Err
 	}
 
-	targetFileName := strings.TrimSuffix(t1FileName, ".t1") + "_templ_sourcemap.html"
+	targetFileName := strings.TrimSuffix(t1FileName, ".t1") + "_t1_sourcemap.html"
 	w, err := os.Create(targetFileName)
 	if err != nil {
 		return fmt.Errorf("%s sourcemap visualisation error: %w", t1FileName, err)

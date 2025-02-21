@@ -18,12 +18,12 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/cli/browser"
 	"github.com/fsnotify/fsnotify"
-	"github.com/senforsce/tndr"
+	"github.com/senforsce/level0/generator"
+	t1 "github.com/senforsce/tndr"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd/modcheck"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd/proxy"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd/run"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd/watcher"
-	"github.com/senforsce/tndr/generator"
 )
 
 func NewGenerate(log *slog.Logger, args Arguments) (g *Generate) {
@@ -99,7 +99,6 @@ func (cmd Generate) Run(ctx context.Context) (err error) {
 		cmd.Args.KeepOrphanedFiles,
 		cmd.Args.ToStdout,
 	)
-
 	// If we're processing a single file, don't bother setting up the channels/multithreaing.
 	if cmd.Args.FileName != "" {
 		_, _, err = fseh.HandleEvent(ctx, fsnotify.Event{

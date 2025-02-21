@@ -3,30 +3,30 @@ package proxy
 import (
 	"sync"
 
-	"github.com/senforsce/tndr/parser/v2"
+	"github.com/senforsce/toolbelt/sourcemap"
 )
 
 // NewSourceMapCache creates a cache of .t1 file URIs to the source map.
 func NewSourceMapCache() *SourceMapCache {
 	return &SourceMapCache{
 		m:              new(sync.Mutex),
-		uriToSourceMap: make(map[string]*parser.SourceMap),
+		uriToSourceMap: make(map[string]*sourcemap.SourceMap),
 	}
 }
 
 // SourceMapCache is a cache of .t1 file URIs to the source map.
 type SourceMapCache struct {
 	m              *sync.Mutex
-	uriToSourceMap map[string]*parser.SourceMap
+	uriToSourceMap map[string]*sourcemap.SourceMap
 }
 
-func (fc *SourceMapCache) Set(uri string, m *parser.SourceMap) {
+func (fc *SourceMapCache) Set(uri string, m *sourcemap.SourceMap) {
 	fc.m.Lock()
 	defer fc.m.Unlock()
 	fc.uriToSourceMap[uri] = m
 }
 
-func (fc *SourceMapCache) Get(uri string) (m *parser.SourceMap, ok bool) {
+func (fc *SourceMapCache) Get(uri string) (m *sourcemap.SourceMap, ok bool) {
 	fc.m.Lock()
 	defer fc.m.Unlock()
 	m, ok = fc.uriToSourceMap[uri]

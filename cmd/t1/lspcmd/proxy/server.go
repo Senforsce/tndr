@@ -6,11 +6,13 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/a-h/parse"
 	lsp "github.com/a-h/protocol"
-	"github.com/senforsce/tndr"
-	"github.com/senforsce/tndr/generator"
-	"github.com/senforsce/tndr/parser/v2"
+	"github.com/senforsce/level0/generator"
+	tf "github.com/senforsce/level0/templatefile"
+
+	"github.com/senforsce/parse"
+	t1 "github.com/senforsce/tndr"
+	"github.com/senforsce/toolbelt/templatefile"
 	"go.lsp.dev/uri"
 	"go.uber.org/zap"
 )
@@ -66,15 +68,15 @@ func (p *Server) updatePosition(t1URI lsp.DocumentURI, current lsp.Position) (ok
 		return
 	}
 	// Map from the source position to target Go position.
-	to, ok := sourceMap.TargetPositionFromSource(current.Line, current.Character)
+	to, ok := sourceMap.TargetPositionFromSource(int(current.Line), int(current.Character))
 	if !ok {
 		log.Info("updatePosition: not found", zap.String("from", fmt.Sprintf("%d:%d", current.Line, current.Character)))
 		return false, t1URI, current
 	}
 	log.Info("updatePosition: found", zap.String("fromTempl", fmt.Sprintf("%d:%d", current.Line, current.Character)),
 		zap.String("toGo", fmt.Sprintf("%d:%d", to.Line, to.Col)))
-	updated.Line = to.Line
-	updated.Character = to.Col
+	updated.Line = uint32(to.Line)
+	updated.Character = uint32(to.Col)
 
 	return true, goURI, updated
 }
@@ -86,15 +88,15 @@ func (p *Server) convertTemplRangeToGoRange(t1URI lsp.DocumentURI, input lsp.Ran
 		return
 	}
 	// Map from the source position to target Go position.
-	start, ok := sourceMap.TargetPositionFromSource(input.Start.Line, input.Start.Character)
+	start, ok := sourceMap.TargetPositionFromSource(int(input.Start.Line), int(input.Start.Character))
 	if ok {
-		output.Start.Line = start.Line
-		output.Start.Character = start.Col
+		output.Start.Line = uint32(start.Line)
+		output.Start.Character = uint32(start.Col)
 	}
-	end, ok := sourceMap.TargetPositionFromSource(input.End.Line, input.End.Character)
+	end, ok := sourceMap.TargetPositionFromSource(int(input.End.Line), int(input.End.Character))
 	if ok {
-		output.End.Line = end.Line
-		output.End.Character = end.Col
+		output.End.Line = uint32(end.Line)
+		output.End.Character = uint32(end.Col)
 	}
 	return
 }
@@ -106,15 +108,15 @@ func (p *Server) convertGoRangeToTemplRange(t1URI lsp.DocumentURI, input lsp.Ran
 		return
 	}
 	// Map from the source position to target Go position.
-	start, ok := sourceMap.SourcePositionFromTarget(input.Start.Line, input.Start.Character)
+	start, ok := sourceMap.SourcePositionFromTarget(int(input.Start.Line), int(input.Start.Character))
 	if ok {
-		output.Start.Line = start.Line
-		output.Start.Character = start.Col
+		output.Start.Line = uint32(start.Line)
+		output.Start.Character = uint32(start.Line)
 	}
-	end, ok := sourceMap.SourcePositionFromTarget(input.End.Line, input.End.Character)
+	end, ok := sourceMap.SourcePositionFromTarget(int(input.End.Line), int(input.End.Character))
 	if ok {
-		output.End.Line = end.Line
-		output.End.Character = end.Col
+		output.End.Line = uint32(end.Line)
+		output.End.Character = uint32(end.Col)
 	}
 	return
 }
@@ -122,14 +124,15 @@ func (p *Server) convertGoRangeToTemplRange(t1URI lsp.DocumentURI, input lsp.Ran
 var replaced string
 
 // parseTemplate parses the t1 file content, and notifies the end user via the LSP about how it went.
-func (p *Server) parseTemplate(ctx context.Context, uri uri.URI, templateText string) (template parser.TemplateFile, ok bool, err error) {
+func (p *Server) parseTemplate(ctx context.Context, uri uri.URI, templateText string) (template templatefile.TemplateFile, ok bool, err error) {
 	inter := strings.ReplaceAll(templateText, "{ ~ ", `{ c.Get("`)
 	if len(inter) > len(templateText) {
 		replaced = strings.ReplaceAll(inter, " ~ }", `").(string) }`)
 	} else {
 		replaced = templateText
 	}
-	template, err = parser.ParseString(replaced)
+	tfp := tf.NewTemplateFileParser("lsp")
+	template, err = templatefile.ParseString(replaced, tfp, tf.TemplateNodeParserList)
 	if err != nil {
 		msg := &lsp.PublishDiagnosticsParams{
 			URI: uri,
@@ -161,7 +164,7 @@ func (p *Server) parseTemplate(ctx context.Context, uri uri.URI, templateText st
 		}
 		return
 	}
-	parsedDiagnostics, err := parser.Diagnose(template)
+	parsedDiagnostics, err := templatefile.Diagnose(template)
 	if err != nil {
 		return
 	}

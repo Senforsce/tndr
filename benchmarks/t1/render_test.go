@@ -9,7 +9,8 @@ import (
 
 	_ "embed"
 
-	"github.com/senforsce/tndr/parser/v2"
+	tf "github.com/senforsce/level0/templatefile"
+	"github.com/senforsce/toolbelt/templatefile"
 )
 
 func BenchmarkTemplRender(b *testing.B) {
@@ -33,8 +34,9 @@ func BenchmarkTemplRender(b *testing.B) {
 var parserBenchmarkTemplate string
 
 func BenchmarkTemplParser(b *testing.B) {
+	tfp := tf.NewTemplateFileParser("benchmark")
 	for i := 0; i < b.N; i++ {
-		tf, err := parser.ParseString(parserBenchmarkTemplate)
+		tf, err := templatefile.ParseString(parserBenchmarkTemplate, tfp, tf.TemplateNodeParserList)
 		if err != nil {
 			b.Fatal(err)
 		}

@@ -11,9 +11,11 @@ import (
 	"time"
 
 	"github.com/natefinch/atomic"
+	tf "github.com/senforsce/level0/templatefile"
+	"github.com/senforsce/toolbelt/templatefile"
+
 	"github.com/senforsce/tndr/cmd/t1/processor"
 	"github.com/senforsce/tndr/cmd/t1/sloghandler"
-	parser "github.com/senforsce/tndr/parser/v2"
 )
 
 type Arguments struct {
@@ -139,7 +141,8 @@ func format(write writer, read reader) (err error) {
 	if err != nil {
 		return err
 	}
-	t, err := parser.ParseString(src)
+	tfp := tf.NewTemplateFileParser("fmt")
+	t, err := templatefile.ParseString(src, tfp, tf.TemplateNodeParserList)
 	if err != nil {
 		return err
 	}

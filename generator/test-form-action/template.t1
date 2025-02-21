@@ -1,7 +1,0 @@
-package testahref
-
-t1 render() {
-	<form action="javascript:alert('unaffected');">Ignored</form>
-	<form action={ t1.URL("javascript:alert('should be sanitized')") }>Sanitized</form>
-	<form action={ t1.SafeURL("javascript:alert('should not be sanitized')") }>Unsanitized</form>
-}

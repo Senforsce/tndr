@@ -2,6 +2,11 @@ module github.com/senforsce/tndr
 
 go 1.23
 
+replace github.com/senforsce/level0/ => ../level0/
+replace github.com/senforsce/o/ => ../o/
+
+replace github.com/senforsce/toolbelt/ => ../toolbelt/
+
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/a-h/htmlformat v0.0.0-20231108124658-5bd994fe268e

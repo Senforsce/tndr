@@ -1,4 +1,4 @@
-# Creating a simple t1 component
+# Creating a simple tndr component
 
 To create a t1 component, first create a new Go project.
 

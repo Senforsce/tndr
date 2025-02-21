@@ -8,11 +8,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/senforsce/tndr"
-	"github.com/senforsce/tndr/parser/v2"
+	t1 "github.com/senforsce/tndr"
+	"github.com/senforsce/toolbelt/sourcemap"
 )
 
-func HTML(t1FileName string, t1Contents, goContents string, sourceMap *parser.SourceMap) t1.Component {
+func HTML(t1FileName string, t1Contents, goContents string, sourceMap *sourcemap.SourceMap) t1.Component {
 	tl := t1Lines{contents: string(t1Contents), sourceMap: sourceMap}
 	gl := goLines{contents: string(goContents), sourceMap: sourceMap}
 	return combine(t1FileName, tl, gl)
@@ -20,7 +20,7 @@ func HTML(t1FileName string, t1Contents, goContents string, sourceMap *parser.So
 
 type t1Lines struct {
 	contents  string
-	sourceMap *parser.SourceMap
+	sourceMap *sourcemap.SourceMap
 }
 
 func (tl t1Lines) Render(ctx context.Context, w io.Writer) (err error) {
@@ -30,7 +30,7 @@ func (tl t1Lines) Render(ctx context.Context, w io.Writer) (err error) {
 			return
 		}
 		for colIndex, c := range line {
-			if tgt, ok := tl.sourceMap.TargetPositionFromSource(uint32(lineIndex), uint32(colIndex)); ok {
+			if tgt, ok := tl.sourceMap.TargetPositionFromSource(int(lineIndex), int(colIndex)); ok {
 				sourceID := fmt.Sprintf("src_%d_%d", lineIndex, colIndex)
 				targetID := fmt.Sprintf("tgt_%d_%d", tgt.Line, tgt.Col)
 				if err := mappedCharacter(string(c), sourceID, targetID).Render(ctx, w); err != nil {
@@ -54,7 +54,7 @@ func (tl t1Lines) Render(ctx context.Context, w io.Writer) (err error) {
 
 type goLines struct {
 	contents  string
-	sourceMap *parser.SourceMap
+	sourceMap *sourcemap.SourceMap
 }
 
 func (gl goLines) Render(ctx context.Context, w io.Writer) (err error) {
@@ -64,7 +64,7 @@ func (gl goLines) Render(ctx context.Context, w io.Writer) (err error) {
 			return
 		}
 		for colIndex, c := range line {
-			if src, ok := gl.sourceMap.SourcePositionFromTarget(uint32(lineIndex), uint32(colIndex)); ok {
+			if src, ok := gl.sourceMap.SourcePositionFromTarget(int(lineIndex), int(colIndex)); ok {
 				sourceID := fmt.Sprintf("src_%d_%d", src.Line, src.Col)
 				targetID := fmt.Sprintf("tgt_%d_%d", lineIndex, colIndex)
 				if err := mappedCharacter(string(c), sourceID, targetID).Render(ctx, w); err != nil {

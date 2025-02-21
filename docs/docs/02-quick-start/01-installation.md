@@ -5,7 +5,7 @@
 With Go 1.20 or greater installed, run:
 
 ```sh
-go install github.com/senforsce/tndr/cmd/templ@latest
+go install github.com/senforsce/tndr/cmd/t1@latest
 ```
 
 ## Github binaries

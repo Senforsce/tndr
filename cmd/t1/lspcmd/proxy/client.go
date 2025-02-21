@@ -63,28 +63,28 @@ func (p Client) PublishDiagnostics(ctx context.Context, params *lsp.PublishDiagn
 	// Rewrite the positions.
 	for i := 0; i < len(params.Diagnostics); i++ {
 		item := params.Diagnostics[i]
-		start, ok := sourceMap.SourcePositionFromTarget(item.Range.Start.Line, item.Range.Start.Character)
+		start, ok := sourceMap.SourcePositionFromTarget(int(item.Range.Start.Line), int(item.Range.Start.Character))
 		if !ok {
 			continue
 		}
 		if item.Range.Start.Line == item.Range.End.Line {
 			length := item.Range.End.Character - item.Range.Start.Character
-			item.Range.Start.Line = start.Line
-			item.Range.Start.Character = start.Col
-			item.Range.End.Line = start.Line
-			item.Range.End.Character = start.Col + length
+			item.Range.Start.Line = uint32(start.Line)
+			item.Range.Start.Character = uint32(start.Col)
+			item.Range.End.Line = uint32(start.Line)
+			item.Range.End.Character = uint32(start.Col) + length
 			params.Diagnostics[i] = item
 			p.Log.Info(fmt.Sprintf("diagnostic [%d] rewritten", i), zap.Any("diagnostic", item))
 			continue
 		}
-		end, ok := sourceMap.SourcePositionFromTarget(item.Range.End.Line, item.Range.End.Character)
+		end, ok := sourceMap.SourcePositionFromTarget(int(item.Range.End.Line), int(item.Range.End.Character))
 		if !ok {
 			continue
 		}
-		item.Range.Start.Line = start.Line
-		item.Range.Start.Character = start.Col
-		item.Range.End.Line = end.Line
-		item.Range.End.Character = end.Col
+		item.Range.Start.Line = uint32(start.Line)
+		item.Range.Start.Character = uint32(start.Col)
+		item.Range.End.Line = uint32(end.Line)
+		item.Range.End.Character = uint32(end.Col)
 		params.Diagnostics[i] = item
 		p.Log.Info(fmt.Sprintf("diagnostic [%d] rewritten", i), zap.Any("diagnostic", item))
 	}
