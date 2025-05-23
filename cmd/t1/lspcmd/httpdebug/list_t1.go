@@ -64,12 +64,12 @@ func list(uris []string) t1.Component {
 			if t1_7745c5c3_Err != nil {
 				return t1_7745c5c3_Err
 			}
-			var t1_7745c5c3_Var5 t1.SafeURL = getTemplURL(uri)
+			var t1_7745c5c3_Var5 t1.SafeURL = getT1URL(uri)
 			_, t1_7745c5c3_Err = t1_7745c5c3_Buffer.WriteString(t1.EscapeString(string(t1_7745c5c3_Var5)))
 			if t1_7745c5c3_Err != nil {
 				return t1_7745c5c3_Err
 			}
-			_, t1_7745c5c3_Err = t1_7745c5c3_Buffer.WriteString("\">Templ</a></td><td><a href=\"")
+			_, t1_7745c5c3_Err = t1_7745c5c3_Buffer.WriteString("\">T1</a></td><td><a href=\"")
 			if t1_7745c5c3_Err != nil {
 				return t1_7745c5c3_Err
 			}

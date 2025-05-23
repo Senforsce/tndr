@@ -11,10 +11,10 @@ t1 list(uris []string) {
 		</tr>
 		for _, uri := range uris {
 			<tr>
-				<td>{ uri }</td>
+				<td class="Active">{ uri }</td>
 				<td><a href={ getMapURL(uri) }>Mapping</a></td>
 				<td><a href={ getSourceMapURL(uri) }>Source Map</a></td>
-				<td><a href={ getTemplURL(uri) }>Templ</a></td>
+				<td><a href={ getT1URL(uri) }>T1</a></td>
 				<td><a href={ getGoURL(uri) }>Go</a></td>
 			</tr>
 		}

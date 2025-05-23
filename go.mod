@@ -6,6 +6,8 @@ replace github.com/senforsce/level0/ => ../level0/
 replace github.com/senforsce/o/ => ../o/
 
 replace github.com/senforsce/toolbelt/ => ../toolbelt/
+replace github.com/senforsce/parse/ => ../parse/
+
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1

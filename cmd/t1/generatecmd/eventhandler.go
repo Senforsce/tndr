@@ -229,7 +229,7 @@ func (h *FSEventHandler) generate(ctx context.Context, fileName string) (goUpdat
 	formattedGoCode, err := format.Source(b.Bytes())
 	if err != nil {
 		err = remapErrorList(err, sourceMap, fileName, targetFileName)
-		return false, false, nil, fmt.Errorf("%s source formatting error %w => %s", fileName, err, b.String())
+		return false, false, nil, fmt.Errorf("%s sourcex formatting error %w => %s", fileName, err, b.String())
 	}
 
 	// Hash output, and write out the file if the goCodeHash has changed.

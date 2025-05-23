@@ -7,7 +7,7 @@ import (
 	lsp "github.com/a-h/protocol"
 )
 
-func convertTemplToGoURI(t1URI lsp.DocumentURI) (isTemplFile bool, goURI lsp.DocumentURI) {
+func convertT1ToGoURI(t1URI lsp.DocumentURI) (isT1File bool, goURI lsp.DocumentURI) {
 	base, fileName := path.Split(string(t1URI))
 	if !strings.HasSuffix(fileName, ".t1") {
 		return
@@ -15,7 +15,7 @@ func convertTemplToGoURI(t1URI lsp.DocumentURI) (isTemplFile bool, goURI lsp.Doc
 	return true, lsp.DocumentURI(base + (strings.TrimSuffix(fileName, ".t1") + "_t1.go"))
 }
 
-func convertTemplGoToTemplURI(goURI lsp.DocumentURI) (isTemplGoFile bool, t1URI lsp.DocumentURI) {
+func convertT1GoToT1URI(goURI lsp.DocumentURI) (isT1GoFile bool, t1URI lsp.DocumentURI) {
 	base, fileName := path.Split(string(goURI))
 	if !strings.HasSuffix(fileName, "_t1.go") {
 		return

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/senforsce/tndr"
+	t1 "github.com/senforsce/tndr"
 
 	"github.com/senforsce/tndr/cmd/t1/lspcmd/proxy"
 	"github.com/senforsce/tndr/cmd/t1/visualize"
@@ -18,9 +18,9 @@ var log *zap.Logger
 func NewHandler(l *zap.Logger, s *proxy.Server) http.Handler {
 	m := http.NewServeMux()
 	log = l
-	m.HandleFunc("/templ", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/t1", func(w http.ResponseWriter, r *http.Request) {
 		uri := r.URL.Query().Get("uri")
-		c, ok := s.TemplSource.Get(uri)
+		c, ok := s.T1Source.Get(uri)
 		if !ok {
 			Error(w, "uri not found", http.StatusNotFound)
 			return
@@ -49,13 +49,13 @@ func NewHandler(l *zap.Logger, s *proxy.Server) http.Handler {
 		uri := r.URL.Query().Get("uri")
 		if uri == "" {
 			// List all URIs.
-			if err := list(s.TemplSource.URIs()).Render(r.Context(), w); err != nil {
+			if err := list(s.T1Source.URIs()).Render(r.Context(), w); err != nil {
 				Error(w, "failed to list URIs", http.StatusInternalServerError)
 			}
 			return
 		}
 		// Assume we've got a URI.
-		t1Source, ok := s.TemplSource.Get(uri)
+		t1Source, ok := s.T1Source.Get(uri)
 		if !ok {
 			if !ok {
 				Error(w, "uri not found in document contents", http.StatusNotFound)
@@ -89,8 +89,8 @@ func getSourceMapURL(uri string) t1.SafeURL {
 	return withQuery("/sourcemap", uri)
 }
 
-func getTemplURL(uri string) t1.SafeURL {
-	return withQuery("/templ", uri)
+func getT1URL(uri string) t1.SafeURL {
+	return withQuery("/t1", uri)
 }
 
 func getGoURL(uri string) t1.SafeURL {
