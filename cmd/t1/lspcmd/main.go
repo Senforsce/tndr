@@ -4,17 +4,16 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 
-	"github.com/a-h/protocol"
 	"github.com/senforsce/tndr/cmd/t1/lspcmd/httpdebug"
 	"github.com/senforsce/tndr/cmd/t1/lspcmd/pls"
 	"github.com/senforsce/tndr/cmd/t1/lspcmd/proxy"
-	"go.lsp.dev/jsonrpc2"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"github.com/senforsce/tndr/lsp/jsonrpc2"
+	"github.com/senforsce/tndr/lsp/protocol"
 
 	_ "net/http/pprof"
 )
@@ -23,13 +22,16 @@ type Arguments struct {
 	Log           string
 	GoplsLog      string
 	GoplsRPCTrace bool
+	GoplsRemote   string
 	// PPROF sets whether to start a profiling server on localhost:9999
 	PPROF bool
 	// HTTPDebug sets the HTTP endpoint to listen on. Leave empty for no web debug.
 	HTTPDebug string
+	// NoPreload disables preloading of templ files on server startup (useful for large monorepos)
+	NoPreload bool
 }
 
-func Run(w io.Writer, args Arguments) error {
+func Run(stdin io.Reader, stdout, stderr io.Writer, args Arguments) (err error) {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	signalChan := make(chan os.Signal, 1)
@@ -52,30 +54,29 @@ func Run(w io.Writer, args Arguments) error {
 		<-signalChan // Second signal, hard exit.
 		os.Exit(2)
 	}()
-	return run(ctx, w, args)
+	log := slog.New(slog.NewJSONHandler(io.Discard, nil))
+	if args.Log != "" {
+		file, err := os.OpenFile(args.Log, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+		if err != nil {
+			return fmt.Errorf("failed to open log file: %w", err)
+		}
+		defer func() {
+			_ = file.Close()
+		}()
+
+		// Create a new logger with a file writer
+		log = slog.New(slog.NewJSONHandler(file, nil))
+		log.Debug("Logging to file", slog.String("file", args.Log))
+	}
+	templStream := jsonrpc2.NewStream(newStdRwc(log, "templStream", stdout, stdin))
+	return run(ctx, log, templStream, args)
 }
 
-func run(ctx context.Context, w io.Writer, args Arguments) (err error) {
-	log := zap.NewNop()
-	if args.Log != "" {
-		cfg := zap.NewProductionConfig()
-		cfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
-		cfg.OutputPaths = []string{
-			args.Log,
-		}
-		log, err = cfg.Build()
-		if err != nil {
-			_, _ = fmt.Fprintf(w, "failed to create logger: %v\n", err)
-			os.Exit(1)
-		}
-	}
-	defer func() {
-		_ = log.Sync()
-	}()
+func run(ctx context.Context, log *slog.Logger, templStream jsonrpc2.Stream, args Arguments) (err error) {
 	log.Info("lsp: starting up...")
 	defer func() {
 		if r := recover(); r != nil {
-			log.Fatal("handled panic", zap.Any("recovered", r))
+			log.Error("handled panic", slog.Any("recovered", r))
 		}
 	}()
 
@@ -83,41 +84,48 @@ func run(ctx context.Context, w io.Writer, args Arguments) (err error) {
 	rwc, err := pls.NewGopls(ctx, log, pls.Options{
 		Log:      args.GoplsLog,
 		RPCTrace: args.GoplsRPCTrace,
+		Remote:   args.GoplsRemote,
 	})
 	if err != nil {
-		log.Error("failed to start gopls", zap.Error(err))
+		log.Error("failed to start gopls", slog.Any("error", err))
 		os.Exit(1)
 	}
 
 	cache := proxy.NewSourceMapCache()
 	diagnosticCache := proxy.NewDiagnosticCache()
 
-	log.Info("creating client")
+	log.Info("creating gopls client")
 	clientProxy, clientInit := proxy.NewClient(log, cache, diagnosticCache)
-	_, goplsConn, goplsServer := protocol.NewClient(context.Background(), clientProxy, jsonrpc2.NewStream(rwc), log)
-	defer goplsConn.Close()
+	_, goplsConn, goplsServer := protocol.NewClient(ctx, clientProxy, jsonrpc2.NewStream(rwc), log)
+	defer func() {
+		if closeErr := goplsConn.Close(); closeErr != nil {
+			log.Error("failed to close gopls connection", slog.Any("error", closeErr))
+		}
+	}()
 
 	log.Info("creating proxy")
 	// Create the proxy to sit between.
-	serverProxy, serverInit := proxy.NewServer(log, goplsServer, cache, diagnosticCache)
+	serverProxy := proxy.NewServer(log, goplsServer, cache, diagnosticCache, args.NoPreload)
 
-	// Create t1 server.
-	log.Info("creating t1 server")
-	t1Stream := jsonrpc2.NewStream(stdrwc{log: log})
-	_, t1Conn, t1Client := protocol.NewServer(context.Background(), serverProxy, t1Stream, log)
-	defer t1Conn.Close()
+	// Create templ server.
+	log.Info("creating templ server")
+	_, templConn, templClient := protocol.NewServer(context.Background(), serverProxy, templStream, log)
+	defer func() {
+		if err = templConn.Close(); err != nil {
+			log.Error("failed to close templ connection", slog.Any("error", err))
+		}
+	}()
 
 	// Allow both the server and the client to initiate outbound requests.
-	clientInit(t1Client)
-	serverInit(t1Client)
+	clientInit(templClient)
 
 	// Start the web server if required.
 	if args.HTTPDebug != "" {
-		log.Info("starting debug http server", zap.String("addr", args.HTTPDebug))
+		log.Info("starting debug http server", slog.String("addr", args.HTTPDebug))
 		h := httpdebug.NewHandler(log, serverProxy)
 		go func() {
 			if err := http.ListenAndServe(args.HTTPDebug, h); err != nil {
-				log.Error("web server failed", zap.Error(err))
+				log.Error("web server failed", slog.Any("error", err))
 			}
 		}()
 	}
@@ -127,8 +135,8 @@ func run(ctx context.Context, w io.Writer, args Arguments) (err error) {
 	select {
 	case <-ctx.Done():
 		log.Info("context closed")
-	case <-t1Conn.Done():
-		log.Info("t1Conn closed")
+	case <-templConn.Done():
+		log.Info("templConn closed")
 	case <-goplsConn.Done():
 		log.Info("goplsConn closed")
 	}
