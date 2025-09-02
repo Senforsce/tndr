@@ -1,4 +1,4 @@
-module templ/testproject
+module tndr/testproject
 
 go 1.21
 

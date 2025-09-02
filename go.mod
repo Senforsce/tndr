@@ -1,13 +1,14 @@
 module github.com/senforsce/tndr
 
-go 1.23
+go 1.25.0
 
 replace github.com/senforsce/level0/ => ../level0/
+
 replace github.com/senforsce/o/ => ../o/
 
 replace github.com/senforsce/toolbelt/ => ../toolbelt/
-replace github.com/senforsce/parse/ => ../parse/
 
+replace github.com/senforsce/parse/ => ../parse/
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
@@ -25,10 +26,19 @@ require (
 	go.lsp.dev/uri v0.3.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/mod v0.17.0
-	golang.org/x/tools v0.13.0
+	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d
 )
 
 require github.com/a-h/lexical v0.0.53
+
+require (
+	github.com/oklog/ulid/v2 v2.1.1 // indirect
+	github.com/samber/lo v1.51.0 // indirect
+	github.com/samber/oops v1.19.0 // indirect
+	go.opentelemetry.io/otel v1.29.0 // indirect
+	go.opentelemetry.io/otel/trace v1.29.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
+)
 
 require (
 	github.com/andybalholm/brotli v1.1.0
@@ -42,6 +52,6 @@ require (
 	github.com/segmentio/encoding v0.4.0 // indirect
 	go.lsp.dev/pkg v0.0.0-20210717090340-384b27a52fb2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/net v0.24.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/sys v0.20.0 // indirect
 )

@@ -58,7 +58,7 @@ func replaceInFile(name, src, tgt string) error {
 	if err != nil {
 		return err
 	}
-	updated := strings.Replace(string(data), src, tgt, -1)
+	updated := strings.ReplaceAll(string(data), src, tgt)
 	return os.WriteFile(name, []byte(updated), 0660)
 }
 
@@ -288,9 +288,7 @@ func Setup() (args TestArgs, teardown func(t *testing.T), err error) {
 	var wg sync.WaitGroup
 	var cmdErr error
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	wg.Go(func() {
 		cmdErr = generatecmd.Run(ctx, os.Stdout, generatecmd.Arguments{
 			Path:              appDir,
 			Watch:             true,
@@ -301,7 +299,7 @@ func Setup() (args TestArgs, teardown func(t *testing.T), err error) {
 			IncludeTimestamp:  false,
 			KeepOrphanedFiles: false,
 		})
-	}()
+	})
 
 	// Wait for server to start.
 	if err = waitForUrl(args.AppURL); err != nil {

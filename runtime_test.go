@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/senforsce/tndr"
+	t1 "github.com/senforsce/tndr"
 )
 
 func TestCSSHandler(t *testing.T) {
@@ -51,10 +51,10 @@ func TestCSSHandler(t *testing.T) {
 			h := t1.NewCSSHandler(tt.input...)
 			h.ServeHTTP(w, &http.Request{})
 			if diff := cmp.Diff(tt.expectedMIMEType, w.Header().Get("Content-Type")); diff != "" {
-				t.Errorf(diff)
+				t.Errorf("%s", diff)
 			}
 			if diff := cmp.Diff(tt.expectedBody, w.Body.String()); diff != "" {
-				t.Errorf(diff)
+				t.Errorf("%s", diff)
 			}
 		})
 	}
@@ -110,10 +110,10 @@ func TestCSSMiddleware(t *testing.T) {
 			w := httptest.NewRecorder()
 			tt.handler.ServeHTTP(w, tt.input)
 			if diff := cmp.Diff(tt.expectedMIMEType, w.Header().Get("Content-Type")); diff != "" {
-				t.Errorf(diff)
+				t.Errorf("%s", diff)
 			}
 			if diff := cmp.Diff(tt.expectedBody, w.Body.String()); diff != "" {
-				t.Errorf(diff)
+				t.Errorf("%s", diff)
 			}
 		})
 	}

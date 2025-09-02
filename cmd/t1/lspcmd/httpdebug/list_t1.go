@@ -7,6 +7,7 @@ package httpdebug
 //lint:file-ignore SA4006 This context is only used if a nested component is present.
 
 import "github.com/senforsce/tndr"
+import "github.com/senforsce/o/tr"
 import "context"
 import "io"
 import "bytes"
@@ -29,14 +30,14 @@ func list(uris []string) t1.Component {
 			return t1_7745c5c3_Err
 		}
 		for _, uri := range uris {
-			_, t1_7745c5c3_Err = t1_7745c5c3_Buffer.WriteString("<tr><td>")
+			_, t1_7745c5c3_Err = t1_7745c5c3_Buffer.WriteString("<tr><td class=" + tr.Echo("Active") + ">")
 			if t1_7745c5c3_Err != nil {
 				return t1_7745c5c3_Err
 			}
 			var t1_7745c5c3_Var2 string
 			t1_7745c5c3_Var2, t1_7745c5c3_Err = t1.JoinStringErrs(uri)
 			if t1_7745c5c3_Err != nil {
-				return t1.Error{Err: t1_7745c5c3_Err, FileName: `lspcmd/httpdebug/list.t1`, Line: 13, Col: 13}
+				return t1.Error{Err: t1_7745c5c3_Err, FileName: `cmd/t1/lspcmd/httpdebug/list.t1`, Line: 13, Col: 28}
 			}
 			_, t1_7745c5c3_Err = t1_7745c5c3_Buffer.WriteString(t1.EscapeString(t1_7745c5c3_Var2))
 			if t1_7745c5c3_Err != nil {

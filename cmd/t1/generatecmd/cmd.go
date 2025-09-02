@@ -132,9 +132,7 @@ func (cmd Generate) Run(ctx context.Context) (err error) {
 	var pushHandlerWG sync.WaitGroup
 
 	// Start process to push events into the channel.
-	pushHandlerWG.Add(1)
-	go func() {
-		defer pushHandlerWG.Done()
+	pushHandlerWG.Go(func() {
 		defer close(events)
 		cmd.Log.Debug(
 			"Walking directory",
@@ -189,7 +187,7 @@ func (cmd Generate) Run(ctx context.Context) (err error) {
 			errs <- FatalError{Err: fmt.Errorf("failed to walk files: %w", err)}
 			return
 		}
-	}()
+	})
 
 	// Start process to handle events.
 	eventHandlerWG.Add(1)

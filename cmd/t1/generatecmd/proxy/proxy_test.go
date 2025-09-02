@@ -317,7 +317,7 @@ func TestProxy(t *testing.T) {
 			t.Errorf("unexpected response body (-got +want):\n%s", diff)
 		}
 	})
-	t.Run("notify-proxy: sending POST request to /_templ/reload/events should receive reload sse event", func(t *testing.T) {
+	t.Run("notify-proxy: sending POST request to /_t1/reload/events should receive reload sse event", func(t *testing.T) {
 		// Arrange 1: create a test proxy server.
 		dummyHandler := func(w http.ResponseWriter, r *http.Request) {}
 		dummyServer := httptest.NewServer(http.HandlerFunc(dummyHandler))
@@ -350,7 +350,7 @@ func TestProxy(t *testing.T) {
 		sseRespCh := make(chan string)
 		sseListening := make(chan bool) // Coordination channel that ensures the SSE listener is started before notifying the proxy.
 		go func() {
-			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/_templ/reload/events", proxyServer.URL), nil)
+			req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/_t1/reload/events", proxyServer.URL), nil)
 			if err != nil {
 				errChan <- err
 				return

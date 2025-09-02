@@ -2,7 +2,7 @@ package turbo
 
 t1 actionTemplate(action string, target string) {
 	<turbo-stream action={ action } target={ target }>
-		<template>
+		<template id="test">
 			{ children... }
 		</template>
 	</turbo-stream>

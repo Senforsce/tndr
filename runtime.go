@@ -339,7 +339,7 @@ func (cssm CSSMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, c := range cssm.CSSHandler.Classes {
 		v.addClass(c.ID)
 	}
-	// Serve the request. Templ components will use the updated context
+	// Serve the request. Tndr components will use the updated context
 	// to know to skip rendering <style> elements for any component CSS
 	// classes that have been included in the global stylesheet.
 	cssm.Next.ServeHTTP(w, r.WithContext(ctx))
