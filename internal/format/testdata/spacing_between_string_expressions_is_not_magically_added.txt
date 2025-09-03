@@ -1,0 +1,12 @@
+-- in --
+package main
+
+t1 x() {
+    <div>{pt1}{pt2}</div>
+}
+-- out --
+package main
+
+t1 x() {
+	<div>{ pt1 }{ pt2 }</div>
+}

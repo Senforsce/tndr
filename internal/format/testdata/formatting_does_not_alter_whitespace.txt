@@ -1,0 +1,13 @@
+-- in --
+package test
+
+t1 nested() {
+	<div>{ "the" }<div>{ "other" }</div></div>
+}
+
+-- out --
+package test
+
+t1 nested() {
+	<div>{ "the" }<div>{ "other" }</div></div>
+}

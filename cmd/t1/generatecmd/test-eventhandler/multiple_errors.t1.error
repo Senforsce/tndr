@@ -1,0 +1,9 @@
+package testeventhandler
+
+func invalid(a: string) string {
+    return "foo"
+}
+
+t1 multipleError(a: string) {
+    <div/>
+}

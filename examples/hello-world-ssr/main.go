@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/senforsce/tndr"
@@ -10,8 +11,10 @@ import (
 func main() {
 	component := hello("John")
 
-	http.Handle("/", t1.Handler(component))
+	http.Handle("/", tndr.Handler(component))
 
 	fmt.Println("Listening on :3000")
-	http.ListenAndServe(":3000", nil)
+	if err := http.ListenAndServe(":3000", nil); err != nil {
+		log.Fatalf("server error: %v", err)
+	}
 }

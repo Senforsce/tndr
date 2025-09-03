@@ -1,0 +1,20 @@
+-- in --
+package p
+
+t1 List(
+list1 list[item],
+list2 list[item],
+list3 list[item],
+) {
+	<div></div>
+}
+-- out --
+package p
+
+t1 List(
+	list1 list[item],
+	list2 list[item],
+	list3 list[item],
+) {
+	<div></div>
+}

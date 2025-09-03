@@ -1,6 +1,6 @@
 # Hosting using Docker
 
-Applications that use t1 can be deployed using the same techniques and platforms as any other Go application.
+Applications that use tndr can be deployed using the same techniques and platforms as any other Go application.
 
 An example Dockerfile is provided in the https://github.com/senforsce/tndr/tree/main/examples/counter-basic example.
 
@@ -96,3 +96,4 @@ The https://github.com/senforsce/tndr/tree/main/examples/counter-basic example i
 :::note
 This sample application stores the counts in RAM. If the server restarts, all of the information is lost. To avoid this, use a data store such as DynamoDB or Cloud Firestore. See https://github.com/senforsce/tndr/tree/main/examples/counter for an example of this.
 :::
+

@@ -1,8 +1,8 @@
 builds:
   - env:
       - CGO_ENABLED=0
-    dir: cmd/t1
-    mod_timestamp: "{{ .CommitTimestamp }}"
+    dir: cmd/templ
+    mod_timestamp: '{{ .CommitTimestamp }}'
     flags:
       - -trimpath
     ldflags:
@@ -12,8 +12,23 @@ builds:
       - windows
       - darwin
 
+checksum:
+  name_template: 'checksums.txt'
+
 signs:
-  - artifacts: checksum
+  - id: checksums
+    cmd: cosign
+    stdin: '{{ .Env.COSIGN_PASSWORD }}'
+    output: true
+    artifacts: checksum
+    args:
+      - sign-blob
+      - --yes
+      - --key
+      - env://COSIGN_PRIVATE_KEY
+      - '--output-certificate=${certificate}'
+      - '--output-signature=${signature}'
+      - '${artifact}'
 
 archives:
   - format: tar.gz
@@ -24,13 +39,34 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-checksum:
-  name_template: "checksums.txt"
+
+kos:
+  - repository: ghcr.io/senforsce/tndr
+    platforms:
+    - linux/amd64
+    - linux/arm64
+    tags:
+    - latest
+    - '{{.Tag}}'
+    bare: true
+
+docker_signs:
+  - cmd: cosign
+    artifacts: all
+    output: true
+    args:
+      - sign
+      - --yes
+      - --key
+      - env://COSIGN_PRIVATE_KEY
+      - '${artifact}'
+
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
+
 changelog:
   sort: asc
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
+      - '^docs:'
+      - '^test:'

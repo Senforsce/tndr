@@ -15,7 +15,7 @@ flowchart TD
 
 First, define a HTML form post with two buttons. One to update a global state, and one for a per-user state.
 
-```t1 title="components.t1"
+```tndr title="components.t1"
 package main
 
 import "strconv"
@@ -39,12 +39,12 @@ t1 page(global, user int) {
 ```
 
 :::tip
-While we could read the global state directly, we're following the best practice that t1 components are idempotent, pure functions.
+While we could read the global state directly, we're following the best practice that tndr components are idempotent, pure functions.
 :::
 
 The HTTP form in the templates posts data back to the `/` handler.
 
-The `/` handler looks at the HTTP request. If it's a GET request, the t1 templates are rendered by the `getHandler`.
+The `/` handler looks at the HTTP request. If it's a GET request, the tndr templates are rendered by the `getHandler`.
 
 If it's a POST request, then the `postHandler` is used. This parses the data sent over HTTP, and looks to see if the `global` button was the button that submitted the form, and increments the global count value if it was.
 

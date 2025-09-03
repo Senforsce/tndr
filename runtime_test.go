@@ -1,4 +1,4 @@
-package t1_test
+package tndr_test
 
 import (
 	"bytes"
@@ -12,13 +12,37 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	t1 "github.com/senforsce/tndr"
+	"github.com/senforsce/tndr"
 )
+
+func TestCSSID(t *testing.T) {
+	t.Run("minimum hash suffix length is 8", func(t *testing.T) {
+		// See issue #978.
+		name := "classA"
+		css := "background-color:white;"
+		actual := len(tndr.CSSID(name, css))
+		expected := len(name) + 1 + 8
+		if expected != actual {
+			t.Errorf("expected length %d, got %d", expected, actual)
+		}
+	})
+	t.Run("known hash collisions are avoided", func(t *testing.T) {
+		name := "classA"
+		// Note that the first 4 characters of the hash are the same.
+		css1 := "grid-column:1;grid-row:1;"  // After hash: f781266f
+		css2 := "grid-column:13;grid-row:6;" // After hash: f781f18b
+		id1 := tndr.CSSID(name, css1)
+		id2 := tndr.CSSID(name, css2)
+		if id1 == id2 {
+			t.Errorf("hash collision: %s == %s", id1, id2)
+		}
+	})
+}
 
 func TestCSSHandler(t *testing.T) {
 	tests := []struct {
 		name             string
-		input            []t1.CSSClass
+		input            []tndr.CSSClass
 		expectedMIMEType string
 		expectedBody     string
 	}{
@@ -30,15 +54,15 @@ func TestCSSHandler(t *testing.T) {
 		},
 		{
 			name:             "classes are rendered",
-			input:            []t1.CSSClass{t1.ComponentCSSClass{ID: "className", Class: t1.SafeCSS(".className{background-color:white;}")}},
+			input:            []tndr.CSSClass{tndr.ComponentCSSClass{ID: "className", Class: tndr.SafeCSS(".className{background-color:white;}")}},
 			expectedMIMEType: "text/css",
 			expectedBody:     ".className{background-color:white;}",
 		},
 		{
 			name: "classes are rendered",
-			input: []t1.CSSClass{
-				t1.ComponentCSSClass{ID: "classA", Class: t1.SafeCSS(".classA{background-color:white;}")},
-				t1.ComponentCSSClass{ID: "classB", Class: t1.SafeCSS(".classB{background-color:green;}")},
+			input: []tndr.CSSClass{
+				tndr.ComponentCSSClass{ID: "classA", Class: tndr.SafeCSS(".classA{background-color:white;}")},
+				tndr.ComponentCSSClass{ID: "classB", Class: tndr.SafeCSS(".classB{background-color:green;}")},
 			},
 			expectedMIMEType: "text/css",
 			expectedBody:     ".classA{background-color:white;}.classB{background-color:green;}",
@@ -48,13 +72,13 @@ func TestCSSHandler(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			h := t1.NewCSSHandler(tt.input...)
+			h := tndr.NewCSSHandler(tt.input...)
 			h.ServeHTTP(w, &http.Request{})
 			if diff := cmp.Diff(tt.expectedMIMEType, w.Header().Get("Content-Type")); diff != "" {
-				t.Errorf("%s", diff)
+				t.Error(diff)
 			}
 			if diff := cmp.Diff(tt.expectedBody, w.Body.String()); diff != "" {
-				t.Errorf("%s", diff)
+				t.Error(diff)
 			}
 		})
 	}
@@ -66,11 +90,11 @@ func TestCSSMiddleware(t *testing.T) {
 			t.Fatalf("failed to write string: %v", err)
 		}
 	})
-	c1 := t1.ComponentCSSClass{
+	c1 := tndr.ComponentCSSClass{
 		ID:    "c1",
 		Class: ".c1{color:red}",
 	}
-	c2 := t1.ComponentCSSClass{
+	c2 := tndr.ComponentCSSClass{
 		ID:    "c2",
 		Class: ".c2{color:blue}",
 	}
@@ -83,23 +107,23 @@ func TestCSSMiddleware(t *testing.T) {
 		expectedBody     string
 	}{
 		{
-			name:             "accessing /style/t1.css renders CSS, even if it's empty",
-			input:            httptest.NewRequest("GET", "/styles/t1.css", nil),
-			handler:          t1.NewCSSMiddleware(pageHandler),
+			name:             "accessing /style/tndr.css renders CSS, even if it's empty",
+			input:            httptest.NewRequest("GET", "/styles/tndr.css", nil),
+			handler:          tndr.NewCSSMiddleware(pageHandler),
 			expectedMIMEType: "text/css",
 			expectedBody:     "",
 		},
 		{
-			name:             "accessing /style/t1.css renders CSS that includes the classes",
-			input:            httptest.NewRequest("GET", "/styles/t1.css", nil),
-			handler:          t1.NewCSSMiddleware(pageHandler, c1, c2),
+			name:             "accessing /style/tndr.css renders CSS that includes the classes",
+			input:            httptest.NewRequest("GET", "/styles/tndr.css", nil),
+			handler:          tndr.NewCSSMiddleware(pageHandler, c1, c2),
 			expectedMIMEType: "text/css",
 			expectedBody:     ".c1{color:red}.c2{color:blue}",
 		},
 		{
 			name:             "the pageHandler is rendered",
 			input:            httptest.NewRequest("GET", "/index.html", nil),
-			handler:          t1.NewCSSMiddleware(pageHandler, c1, c2),
+			handler:          tndr.NewCSSMiddleware(pageHandler, c1, c2),
 			expectedMIMEType: "text/plain; charset=utf-8",
 			expectedBody:     "Hello, World!",
 		},
@@ -110,45 +134,46 @@ func TestCSSMiddleware(t *testing.T) {
 			w := httptest.NewRecorder()
 			tt.handler.ServeHTTP(w, tt.input)
 			if diff := cmp.Diff(tt.expectedMIMEType, w.Header().Get("Content-Type")); diff != "" {
-				t.Errorf("%s", diff)
+				t.Error(diff)
 			}
 			if diff := cmp.Diff(tt.expectedBody, w.Body.String()); diff != "" {
-				t.Errorf("%s", diff)
+				t.Error(diff)
 			}
 		})
 	}
 }
 
 var cssInputs = []any{
-	[]string{"a", "b"},       // []string
-	"c",                      // string
-	t1.ConstantCSSClass("d"), // ConstantCSSClass
-	t1.ComponentCSSClass{ID: "e", Class: ".e{color:red}"}, // ComponentCSSClass
-	map[string]bool{"f": true, "ff": false},               // map[string]bool
-	t1.KV[string, bool]("g", true),                        // KeyValue[string, bool]
-	t1.KV[string, bool]("gg", false),                      // KeyValue[string, bool]
-	[]t1.KeyValue[string, bool]{
-		t1.KV("h", true),
-		t1.KV("hh", false),
+	[]string{"a", "b"},         // []string
+	"c",                        // string
+	tndr.ConstantCSSClass("d"), // ConstantCSSClass
+	tndr.ComponentCSSClass{ID: "e", Class: ".e{color:red}"}, // ComponentCSSClass
+	map[string]bool{"f": true, "ff": false},                 // map[string]bool
+	tndr.KV("g", true),                                      // KeyValue[string, bool]
+	tndr.KV("gg", false),                                    // KeyValue[string, bool]
+	[]tndr.KeyValue[string, bool]{
+		tndr.KV("h", true),
+		tndr.KV("hh", false),
 	}, // []KeyValue[string, bool]
-	t1.KV[t1.CSSClass, bool](t1.ConstantCSSClass("i"), true),   // KeyValue[CSSClass, bool]
-	t1.KV[t1.CSSClass, bool](t1.ConstantCSSClass("ii"), false), // KeyValue[CSSClass, bool]
-	t1.KV[t1.ComponentCSSClass, bool](t1.ComponentCSSClass{
+	tndr.KV(tndr.ConstantCSSClass("i"), true),   // KeyValue[CSSClass, bool]
+	tndr.KV(tndr.ConstantCSSClass("ii"), false), // KeyValue[CSSClass, bool]
+	tndr.KV(tndr.ComponentCSSClass{
 		ID:    "j",
 		Class: ".j{color:red}",
 	}, true), // KeyValue[ComponentCSSClass, bool]
-	t1.KV[t1.ComponentCSSClass, bool](t1.ComponentCSSClass{
+	tndr.KV(tndr.ComponentCSSClass{
 		ID:    "jj",
 		Class: ".jj{color:red}",
 	}, false), // KeyValue[ComponentCSSClass, bool]
-	t1.CSSClasses{t1.ConstantCSSClass("k")},                          // CSSClasses
-	func() t1.CSSClass { return t1.ConstantCSSClass("l") },           // func() CSSClass
-	t1.CSSClass(t1.ConstantCSSClass("m")),                            // CSSClass
-	customClass{name: "n"},                                           // CSSClass
-	t1.KV[t1.ConstantCSSClass, bool](t1.ConstantCSSClass("o"), true), // KeyValue[ConstantCSSClass, bool]
-	[]t1.KeyValue[t1.ConstantCSSClass, bool]{
-		t1.KV(t1.ConstantCSSClass("p"), true),
-		t1.KV(t1.ConstantCSSClass("pp"), false),
+	tndr.CSSClasses{tndr.ConstantCSSClass("k")},                // CSSClasses
+	func() tndr.CSSClass { return tndr.ConstantCSSClass("l") }, // func() CSSClass
+	tndr.CSSClass(tndr.ConstantCSSClass("m")),                  // CSSClass
+	customClass{name: "n"},                                     // CSSClass
+	[]tndr.CSSClass{customClass{name: "n"}},                    // []CSSClass
+	tndr.KV(tndr.ConstantCSSClass("o"), true),                  // KeyValue[ConstantCSSClass, bool]
+	[]tndr.KeyValue[tndr.ConstantCSSClass, bool]{
+		tndr.KV(tndr.ConstantCSSClass("p"), true),
+		tndr.KV(tndr.ConstantCSSClass("pp"), false),
 	}, // []KeyValue[ConstantCSSClass, bool]
 }
 
@@ -161,11 +186,11 @@ func (cc customClass) ClassName() string {
 }
 
 func TestRenderCSS(t *testing.T) {
-	c1 := t1.ComponentCSSClass{
+	c1 := tndr.ComponentCSSClass{
 		ID:    "c1",
 		Class: ".c1{color:red}",
 	}
-	c2 := t1.ComponentCSSClass{
+	c2 := tndr.ComponentCSSClass{
 		ID:    "c2",
 		Class: ".c2{color:blue}",
 	}
@@ -185,9 +210,9 @@ func TestRenderCSS(t *testing.T) {
 		{
 			name: "if something outside the expected is ignored, if has no effect",
 			toIgnore: []any{
-				t1.ComponentCSSClass{
+				tndr.ComponentCSSClass{
 					ID:    "c3",
-					Class: t1.SafeCSS(".c3{color:yellow}"),
+					Class: tndr.SafeCSS(".c3{color:yellow}"),
 				},
 			},
 			toRender: []any{c1, c2},
@@ -204,9 +229,9 @@ func TestRenderCSS(t *testing.T) {
 			toIgnore: []any{
 				c1,
 				c2,
-				t1.ComponentCSSClass{
+				tndr.ComponentCSSClass{
 					ID:    "c3",
-					Class: t1.SafeCSS(".c3{color:yellow}"),
+					Class: tndr.SafeCSS(".c3{color:yellow}"),
 				},
 			},
 			toRender: []any{c1, c2},
@@ -226,15 +251,15 @@ func TestRenderCSS(t *testing.T) {
 			b := new(bytes.Buffer)
 
 			// Render twice, reusing the same context so that there's a memory of which classes have been rendered.
-			ctx = t1.InitializeContext(ctx)
-			err := t1.RenderCSSItems(ctx, b, tt.toIgnore...)
+			ctx = tndr.InitializeContext(ctx)
+			err := tndr.RenderCSSItems(ctx, b, tt.toIgnore...)
 			if err != nil {
 				t.Fatalf("failed to render initial CSS: %v", err)
 			}
 
 			// Now render again to check that only the expected classes were rendered.
 			b.Reset()
-			err = t1.RenderCSSItems(ctx, b, tt.toRender...)
+			err = tndr.RenderCSSItems(ctx, b, tt.toRender...)
 			if err != nil {
 				t.Fatalf("failed to render CSS: %v", err)
 			}
@@ -243,6 +268,25 @@ func TestRenderCSS(t *testing.T) {
 				t.Error(diff)
 			}
 		})
+	}
+}
+
+func TestRenderCSSItemsWithNonce(t *testing.T) {
+	ctx := tndr.WithNonce(context.Background(), "testnonce")
+	b := new(bytes.Buffer)
+	c := tndr.ComponentCSSClass{
+		ID:    "c1",
+		Class: ".c1{color:red}",
+	}
+	err := tndr.RenderCSSItems(ctx, b, c)
+	if err != nil {
+		t.Fatalf("failed to render CSS: %v", err)
+	}
+	actual := b.String()
+	// Should include nonce attribute on <style> tag.
+	expected := `<style type="text/css" nonce="testnonce">.c1{color:red}</style>`
+	if actual != expected {
+		t.Errorf("expected %q, got %q", expected, actual)
 	}
 }
 
@@ -259,14 +303,14 @@ func TestClassesFunction(t *testing.T) {
 		},
 		{
 			name:     "legacy CSS types are supported",
-			input:    []any{"a", t1.SafeClass("b"), t1.Class("c")},
+			input:    []any{"a", tndr.SafeClass("b"), tndr.Class("c")},
 			expected: "a b c",
 		},
 		{
 			name: "CSS components are included in the output",
 			input: []any{
-				t1.ComponentCSSClass{ID: "classA", Class: t1.SafeCSS(".classA{background-color:white;}")},
-				t1.ComponentCSSClass{ID: "classB", Class: t1.SafeCSS(".classB{background-color:green;}")},
+				tndr.ComponentCSSClass{ID: "classA", Class: tndr.SafeCSS(".classA{background-color:white;}")},
+				tndr.ComponentCSSClass{ID: "classB", Class: tndr.SafeCSS(".classB{background-color:green;}")},
 				"c",
 			},
 			expected: "classA classB c",
@@ -275,8 +319,8 @@ func TestClassesFunction(t *testing.T) {
 			name: "optional classes can be applied with expressions",
 			input: []any{
 				"a",
-				t1.ComponentCSSClass{ID: "classA", Class: t1.SafeCSS(".classA{background-color:white;}")},
-				t1.ComponentCSSClass{ID: "classB", Class: t1.SafeCSS(".classB{background-color:green;}")},
+				tndr.ComponentCSSClass{ID: "classA", Class: tndr.SafeCSS(".classA{background-color:white;}")},
+				tndr.ComponentCSSClass{ID: "classB", Class: tndr.SafeCSS(".classB{background-color:green;}")},
 				"c",
 				map[string]bool{
 					"a":      false,
@@ -289,14 +333,14 @@ func TestClassesFunction(t *testing.T) {
 			expected: "c",
 		},
 		{
-			name: "unknown types for classes get rendered as --t1-css-class-unknown-type",
+			name: "unknown types for classes get rendered as --tndr-css-class-unknown-type",
 			input: []any{
 				123,
 				map[string]string{"test": "no"},
 				false,
 				"c",
 			},
-			expected: "--t1-css-class-unknown-type c",
+			expected: "--tndr-css-class-unknown-type c",
 		},
 		{
 			name: "string arrays are supported",
@@ -314,13 +358,13 @@ func TestClassesFunction(t *testing.T) {
 			expected: "a </style>",
 		},
 		{
-			name: "if a t1.CSSClasses is passed in, the nested CSSClasses are extracted",
+			name: "if a tndr.CSSClasses is passed in, the nested CSSClasses are extracted",
 			input: []any{
-				t1.Classes(
+				tndr.Classes(
 					"a",
-					t1.SafeClass("b"),
-					t1.Class("c"),
-					t1.ComponentCSSClass{
+					tndr.SafeClass("b"),
+					tndr.Class("c"),
+					tndr.ComponentCSSClass{
 						ID:    "d",
 						Class: "{}",
 					},
@@ -332,11 +376,11 @@ func TestClassesFunction(t *testing.T) {
 			name: "kv types can be used to show or hide classes",
 			input: []any{
 				"a",
-				t1.KV("b", true),
+				tndr.KV("b", true),
 				"c",
-				t1.KV("c", false),
-				t1.KV(t1.SafeClass("d"), true),
-				t1.KV(t1.SafeClass("e"), false),
+				tndr.KV("c", false),
+				tndr.KV(tndr.SafeClass("d"), true),
+				tndr.KV(tndr.SafeClass("e"), false),
 			},
 			expected: "a b d",
 		},
@@ -345,9 +389,9 @@ func TestClassesFunction(t *testing.T) {
 			input: []any{
 				"a",
 				"c",
-				[]t1.KeyValue[string, bool]{
-					t1.KV("b", true),
-					t1.KV("c", false),
+				[]tndr.KeyValue[string, bool]{
+					tndr.KV("b", true),
+					tndr.KV("c", false),
 					{"d", true},
 				},
 			},
@@ -356,8 +400,8 @@ func TestClassesFunction(t *testing.T) {
 		{
 			name: "the brackets on component CSS function calls can be elided",
 			input: []any{
-				func() t1.CSSClass {
-					return t1.ComponentCSSClass{
+				func() tndr.CSSClass {
+					return tndr.ComponentCSSClass{
 						ID:    "a",
 						Class: "",
 					}
@@ -368,184 +412,9 @@ func TestClassesFunction(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			actual := t1.Classes(test.input...).String()
+			actual := tndr.Classes(test.input...).String()
 			if actual != test.expected {
 				t.Errorf("expected %q, got %q", test.expected, actual)
-			}
-		})
-	}
-}
-
-func TestHandler(t *testing.T) {
-	hello := t1.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		if _, err := io.WriteString(w, "Hello"); err != nil {
-			t.Fatalf("failed to write string: %v", err)
-		}
-		return nil
-	})
-	errorComponent := t1.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		if _, err := io.WriteString(w, "Hello"); err != nil {
-			t.Fatalf("failed to write string: %v", err)
-		}
-		return errors.New("handler error")
-	})
-
-	tests := []struct {
-		name             string
-		input            *t1.ComponentHandler
-		expectedStatus   int
-		expectedMIMEType string
-		expectedBody     string
-	}{
-		{
-			name:             "handlers return OK by default",
-			input:            t1.Handler(hello),
-			expectedStatus:   http.StatusOK,
-			expectedMIMEType: "text/html; charset=utf-8",
-			expectedBody:     "Hello",
-		},
-		{
-			name:             "handlers return OK by default",
-			input:            t1.Handler(t1.Raw(`♠ ‘ &spades; &#8216;`)),
-			expectedStatus:   http.StatusOK,
-			expectedMIMEType: "text/html; charset=utf-8",
-			expectedBody:     "♠ ‘ &spades; &#8216;",
-		},
-		{
-			name:             "handlers can be configured to return an alternative status code",
-			input:            t1.Handler(hello, t1.WithStatus(http.StatusNotFound)),
-			expectedStatus:   http.StatusNotFound,
-			expectedMIMEType: "text/html; charset=utf-8",
-			expectedBody:     "Hello",
-		},
-		{
-			name:             "handlers can be configured to return an alternative status code and content type",
-			input:            t1.Handler(hello, t1.WithStatus(http.StatusOK), t1.WithContentType("text/csv")),
-			expectedStatus:   http.StatusOK,
-			expectedMIMEType: "text/csv",
-			expectedBody:     "Hello",
-		},
-		{
-			name:             "handlers that fail return a 500 error",
-			input:            t1.Handler(errorComponent),
-			expectedStatus:   http.StatusInternalServerError,
-			expectedMIMEType: "text/plain; charset=utf-8",
-			expectedBody:     "t1: failed to render template\n",
-		},
-		{
-			name: "error handling can be customised",
-			input: t1.Handler(errorComponent, t1.WithErrorHandler(func(r *http.Request, err error) http.Handler {
-				// Because the error is received, it's possible to log the detail of the request.
-				// log.Printf("template render error for %v %v: %v", r.Method, r.URL.String(), err)
-				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusBadRequest)
-					if _, err := io.WriteString(w, "custom body"); err != nil {
-						t.Fatalf("failed to write string: %v", err)
-					}
-				})
-			})),
-			expectedStatus:   http.StatusBadRequest,
-			expectedMIMEType: "text/html; charset=utf-8",
-			expectedBody:     "custom body",
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			w := httptest.NewRecorder()
-			r := httptest.NewRequest("GET", "/test", nil)
-			tt.input.ServeHTTP(w, r)
-			if got := w.Result().StatusCode; tt.expectedStatus != got {
-				t.Errorf("expected status %d, got %d", tt.expectedStatus, got)
-			}
-			if mimeType := w.Result().Header.Get("Content-Type"); tt.expectedMIMEType != mimeType {
-				t.Errorf("expected content-type %s, got %s", tt.expectedMIMEType, mimeType)
-			}
-			body, err := io.ReadAll(w.Result().Body)
-			if err != nil {
-				t.Errorf("failed to read body: %v", err)
-			}
-			if diff := cmp.Diff(tt.expectedBody, string(body)); diff != "" {
-				t.Error(diff)
-			}
-		})
-	}
-}
-
-func TestRenderScriptItems(t *testing.T) {
-	s1 := t1.ComponentScript{
-		Name:     "s1",
-		Function: "function s1() { return 'hello1'; }",
-	}
-	s2 := t1.ComponentScript{
-		Name:     "s2",
-		Function: "function s2() { return 'hello2'; }",
-	}
-	tests := []struct {
-		name     string
-		toIgnore []t1.ComponentScript
-		toRender []t1.ComponentScript
-		expected string
-	}{
-		{
-			name:     "if none are ignored, everything is rendered",
-			toIgnore: nil,
-			toRender: []t1.ComponentScript{s1, s2},
-			expected: `<script type="text/javascript">` + s1.Function + s2.Function + `</script>`,
-		},
-		{
-			name: "if something outside the expected is ignored, if has no effect",
-			toIgnore: []t1.ComponentScript{
-				{
-					Name:     "s3",
-					Function: "function s3() { return 'hello3'; }",
-				},
-			},
-			toRender: []t1.ComponentScript{s1, s2},
-			expected: `<script type="text/javascript">` + s1.Function + s2.Function + `</script>`,
-		},
-		{
-			name:     "if one is ignored, it's not rendered",
-			toIgnore: []t1.ComponentScript{s1},
-			toRender: []t1.ComponentScript{s1, s2},
-			expected: `<script type="text/javascript">` + s2.Function + `</script>`,
-		},
-		{
-			name: "if all are ignored, not even style tags are rendered",
-			toIgnore: []t1.ComponentScript{
-				s1,
-				s2,
-				{
-					Name:     "s3",
-					Function: "function s3() { return 'hello3'; }",
-				},
-			},
-			toRender: []t1.ComponentScript{s1, s2},
-			expected: ``,
-		},
-	}
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
-			ctx := context.Background()
-			b := new(bytes.Buffer)
-
-			// Render twice, reusing the same context so that there's a memory of which classes have been rendered.
-			ctx = t1.InitializeContext(ctx)
-			err := t1.RenderScriptItems(ctx, b, tt.toIgnore...)
-			if err != nil {
-				t.Fatalf("failed to render initial scripts: %v", err)
-			}
-
-			// Now render again to check that only the expected classes were rendered.
-			b.Reset()
-			err = t1.RenderScriptItems(ctx, b, tt.toRender...)
-			if err != nil {
-				t.Fatalf("failed to render scripts: %v", err)
-			}
-
-			if diff := cmp.Diff(tt.expected, b.String()); diff != "" {
-				t.Error(diff)
 			}
 		})
 	}
@@ -565,7 +434,7 @@ func TestErrorWrapping(t *testing.T) {
 	baseErr := baseError{
 		Value: 1,
 	}
-	wrappedErr := t1.Error{Err: baseErr, Line: 1, Col: 2}
+	wrappedErr := tndr.Error{Err: baseErr, Line: 1, Col: 2}
 	t.Run("errors.Is() returns true for the base error", func(t *testing.T) {
 		if !errors.Is(wrappedErr, baseErr) {
 			t.Error("errors.Is() returned false for the base error")
@@ -596,24 +465,24 @@ func TestErrorWrapping(t *testing.T) {
 func TestRawComponent(t *testing.T) {
 	tests := []struct {
 		name        string
-		input       t1.Component
+		input       tndr.Component
 		expected    string
 		expectedErr error
 	}{
 		{
 			name:     "Raw content is not escaped",
-			input:    t1.Raw("<div>Test &</div>"),
+			input:    tndr.Raw("<div>Test &</div>"),
 			expected: `<div>Test &</div>`,
 		},
 		{
 			name:        "Raw will return errors first",
-			input:       t1.Raw("", nil, errors.New("test error")),
+			input:       tndr.Raw("", nil, errors.New("test error")),
 			expected:    `<div>Test &</div>`,
 			expectedErr: errors.New("test error"),
 		},
 		{
 			name:     "Strings marked as safe are rendered without escaping",
-			input:    t1.Raw(template.HTML("<div>")),
+			input:    tndr.Raw(template.HTML("<div>")),
 			expected: `<div>`,
 		},
 	}
@@ -640,7 +509,7 @@ func TestRawComponent(t *testing.T) {
 	}
 	t.Run("Raw does not require allocations", func(t *testing.T) {
 		actualAllocs := testing.AllocsPerRun(4, func() {
-			c := t1.Raw("<div>")
+			c := tndr.Raw("<div>")
 			if c == nil {
 				t.Fatalf("unexpected nil value")
 			}
@@ -654,9 +523,9 @@ func TestRawComponent(t *testing.T) {
 var goTemplate = template.Must(template.New("example").Parse("<div>{{ . }}</div>"))
 
 func TestGoHTMLComponents(t *testing.T) {
-	t.Run("Go templates can be rendered as t1 components", func(t *testing.T) {
+	t.Run("Go templates can be rendered as tndr components", func(t *testing.T) {
 		b := new(bytes.Buffer)
-		err := t1.FromGoHTML(goTemplate, "Test &").Render(context.Background(), b)
+		err := tndr.FromGoHTML(goTemplate, "Test &").Render(context.Background(), b)
 		if err != nil {
 			t.Fatalf("failed to render content: %v", err)
 		}
@@ -664,13 +533,13 @@ func TestGoHTMLComponents(t *testing.T) {
 			t.Error(diff)
 		}
 	})
-	t.Run("t1 components can be rendered in Go templates", func(t *testing.T) {
+	t.Run("tndr components can be rendered in Go templates", func(t *testing.T) {
 		b := new(bytes.Buffer)
-		c := t1.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
+		c := tndr.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 			_, err = io.WriteString(w, "<div>Unsanitized &</div>")
 			return err
 		})
-		h, err := t1.ToGoHTML(context.Background(), c)
+		h, err := tndr.ToGoHTML(context.Background(), c)
 		if err != nil {
 			t.Fatalf("failed to convert to Go HTML: %v", err)
 		}
@@ -683,10 +552,10 @@ func TestGoHTMLComponents(t *testing.T) {
 	})
 	t.Run("errors in ToGoHTML are returned", func(t *testing.T) {
 		expectedErr := errors.New("test error")
-		c := t1.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
+		c := tndr.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 			return expectedErr
 		})
-		_, err := t1.ToGoHTML(context.Background(), c)
+		_, err := tndr.ToGoHTML(context.Background(), c)
 		if err == nil {
 			t.Fatalf("expected error, got nil")
 		}
@@ -696,7 +565,7 @@ func TestGoHTMLComponents(t *testing.T) {
 	})
 	t.Run("FromGoHTML does not require allocations", func(t *testing.T) {
 		actualAllocs := testing.AllocsPerRun(4, func() {
-			c := t1.FromGoHTML(goTemplate, "test &")
+			c := tndr.FromGoHTML(goTemplate, "test &")
 			if c == nil {
 				t.Fatalf("unexpected nil value")
 			}
@@ -707,12 +576,12 @@ func TestGoHTMLComponents(t *testing.T) {
 	})
 	t.Run("ToGoHTML requires one allocation", func(t *testing.T) {
 		expected := "<div>Unsanitized &</div>"
-		c := t1.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
+		c := tndr.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 			_, err = io.WriteString(w, expected)
 			return err
 		})
 		actualAllocs := testing.AllocsPerRun(4, func() {
-			h, err := t1.ToGoHTML(context.Background(), c)
+			h, err := tndr.ToGoHTML(context.Background(), c)
 			if err != nil {
 				t.Fatalf("failed to convert to Go HTML: %v", err)
 			}
@@ -724,4 +593,197 @@ func TestGoHTMLComponents(t *testing.T) {
 			t.Errorf("expected 1 alloc, got %v", actualAllocs)
 		}
 	})
+}
+
+func TestNonce(t *testing.T) {
+	ctx := context.Background()
+	t.Run("returns empty string if not set", func(t *testing.T) {
+		actual := tndr.GetNonce(ctx)
+		if actual != "" {
+			t.Errorf("expected empty string got %q", actual)
+		}
+	})
+	t.Run("returns value if one has been set", func(t *testing.T) {
+		expected := "abc123"
+		ctx := tndr.WithNonce(context.Background(), expected)
+		actual := tndr.GetNonce(ctx)
+		if actual != expected {
+			t.Errorf("expected %q got %q", expected, actual)
+		}
+	})
+}
+
+func TestRenderAttributes(t *testing.T) {
+	tests := []struct {
+		name       string
+		attributes tndr.Attributes
+		expected   string
+	}{
+		{
+			name: "string attributes are rendered",
+			attributes: tndr.Attributes{
+				"class": "test-class",
+				"id":    "test-id",
+			},
+			expected: ` class="test-class" id="test-id"`,
+		},
+		{
+			name: "integer types are rendered as strings",
+			attributes: tndr.Attributes{
+				"int":   42,
+				"int8":  int8(8),
+				"int16": int16(16),
+				"int32": int32(32),
+				"int64": int64(64),
+			},
+			expected: ` int="42" int16="16" int32="32" int64="64" int8="8"`,
+		},
+		{
+			name: "unsigned integer types are rendered as strings",
+			attributes: tndr.Attributes{
+				"uint":    uint(42),
+				"uint8":   uint8(8),
+				"uint16":  uint16(16),
+				"uint32":  uint32(32),
+				"uint64":  uint64(64),
+				"uintptr": uintptr(100),
+			},
+			expected: ` uint="42" uint16="16" uint32="32" uint64="64" uint8="8" uintptr="100"`,
+		},
+		{
+			name: "float types are rendered as strings",
+			attributes: tndr.Attributes{
+				"float32": float32(3.14),
+				"float64": float64(2.718),
+			},
+			expected: ` float32="3.14" float64="2.718"`,
+		},
+		{
+			name: "complex types are rendered as strings",
+			attributes: tndr.Attributes{
+				"complex64":  complex64(1 + 2i),
+				"complex128": complex128(3 + 4i),
+			},
+			expected: ` complex128="(3+4i)" complex64="(1+2i)"`,
+		},
+		{
+			name: "boolean attributes are rendered correctly",
+			attributes: tndr.Attributes{
+				"checked":  true,
+				"disabled": false,
+			},
+			expected: ` checked`,
+		},
+		{
+			name: "mixed types are rendered correctly",
+			attributes: tndr.Attributes{
+				"class":  "button",
+				"value":  42,
+				"width":  float64(100.5),
+				"hidden": false,
+				"active": true,
+			},
+			expected: ` active class="button" value="42" width="100.5"`,
+		},
+		{
+			name: "nil pointer attributes are not rendered",
+			attributes: tndr.Attributes{
+				"optional": (*string)(nil),
+				"visible":  (*bool)(nil),
+			},
+			expected: ``,
+		},
+		{
+			name: "non-nil pointer attributes are rendered",
+			attributes: tndr.Attributes{
+				"title":   ptr("test title"),
+				"enabled": ptr(true),
+			},
+			expected: ` enabled title="test title"`,
+		},
+		{
+			name: "numeric pointer types are rendered as strings",
+			attributes: tndr.Attributes{
+				"int-ptr":        ptr(42),
+				"int8-ptr":       ptr(int8(8)),
+				"int16-ptr":      ptr(int16(16)),
+				"int32-ptr":      ptr(int32(32)),
+				"int64-ptr":      ptr(int64(64)),
+				"uint-ptr":       ptr(uint(42)),
+				"uint8-ptr":      ptr(uint8(8)),
+				"uint16-ptr":     ptr(uint16(16)),
+				"uint32-ptr":     ptr(uint32(32)),
+				"uint64-ptr":     ptr(uint64(64)),
+				"uintptr-ptr":    ptr(uintptr(100)),
+				"float32-ptr":    ptr(float32(3.14)),
+				"float64-ptr":    ptr(float64(2.718)),
+				"complex64-ptr":  ptr(complex64(1 + 2i)),
+				"complex128-ptr": ptr(complex128(3 + 4i)),
+			},
+			expected: ` complex128-ptr="(3+4i)" complex64-ptr="(1+2i)" float32-ptr="3.14" float64-ptr="2.718" int-ptr="42" int16-ptr="16" int32-ptr="32" int64-ptr="64" int8-ptr="8" uint-ptr="42" uint16-ptr="16" uint32-ptr="32" uint64-ptr="64" uint8-ptr="8" uintptr-ptr="100"`,
+		},
+		{
+			name: "nil numeric pointer attributes are not rendered",
+			attributes: tndr.Attributes{
+				"int-ptr":       (*int)(nil),
+				"float32-ptr":   (*float32)(nil),
+				"complex64-ptr": (*complex64)(nil),
+			},
+			expected: ``,
+		},
+		{
+			name: "KeyValue[string, bool] attributes are rendered correctly",
+			attributes: tndr.Attributes{
+				"data-value":  tndr.KV("test-string", true),
+				"data-hidden": tndr.KV("ignored", false),
+			},
+			expected: ` data-value="test-string"`,
+		},
+		{
+			name: "KeyValue[bool, bool] attributes are rendered correctly",
+			attributes: tndr.Attributes{
+				"checked":  tndr.KV(true, true),
+				"disabled": tndr.KV(false, true),
+				"hidden":   tndr.KV(true, false),
+			},
+			expected: ` checked`,
+		},
+		{
+			name: "function bool attributes are rendered correctly",
+			attributes: tndr.Attributes{
+				"enabled": func() bool { return true },
+				"hidden":  func() bool { return false },
+			},
+			expected: ` enabled`,
+		},
+		{
+			name: "mixed KeyValue and function attributes",
+			attributes: tndr.Attributes{
+				"data-name": tndr.KV("value", true),
+				"active":    tndr.KV(true, true),
+				"dynamic":   func() bool { return true },
+				"ignored":   tndr.KV("ignored", false),
+			},
+			expected: ` active data-name="value" dynamic`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			var buf bytes.Buffer
+			err := tndr.RenderAttributes(context.Background(), &buf, tt.attributes)
+			if err != nil {
+				t.Fatalf("RenderAttributes failed: %v", err)
+			}
+
+			actual := buf.String()
+			if actual != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, actual)
+			}
+		})
+	}
+}
+
+func ptr[T any](x T) *T {
+	return &x
 }

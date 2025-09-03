@@ -6,8 +6,8 @@ https://htmx.org can be used to selectively replace content within a web page, i
 
 Using HTMX requires:
 
-- Installation of the HTMX client-side library.
-- Modifying the HTML markup to instruct the library to perform partial screen updates.
+* Installation of the HTMX client-side library.
+* Modifying the HTML markup to instruct the library to perform partial screen updates.
 
 ## Installation
 
@@ -31,7 +31,7 @@ Adding these attributes instructs the HTMX library to replace the browser's HTTP
 
 The `/` endpoint returns a complete HTML page instead of just the updated `<form>` element HTML. The `hx-select="#countsForm"` instructs HTMX to extract the HTML content within the `countsForm` element that is returned by the web server to replace the `<form>` element.
 
-```t1 title="components/components.t1"
+```tndr title="components/components.t1"
 t1 counts(global, session int) {
 	// highlight-next-line
 	<form id="countsForm" action="/" method="POST" hx-post="/" hx-select="#countsForm" hx-swap="outerHTML">

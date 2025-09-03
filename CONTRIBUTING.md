@@ -182,7 +182,7 @@ It also contains an expected output file.
 
 ```html
 <a href="javascript:alert(&#39;unaffected&#39;);">Ignored</a>
-<a href="about:invalid#TemplFailedSanitizationURL">Sanitized</a>
+<a href="about:invalid#TndrFailedSanitizationURL">Sanitized</a>
 <a href="javascript:alert(&#39;should not be sanitized&#39;)">Unsanitized</a>
 ```
 

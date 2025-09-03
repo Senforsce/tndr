@@ -27,7 +27,7 @@ type Arguments struct {
 	PPROF bool
 	// HTTPDebug sets the HTTP endpoint to listen on. Leave empty for no web debug.
 	HTTPDebug string
-	// NoPreload disables preloading of templ files on server startup (useful for large monorepos)
+	// NoPreload disables preloading of tndr files on server startup (useful for large monorepos)
 	NoPreload bool
 }
 
@@ -68,11 +68,11 @@ func Run(stdin io.Reader, stdout, stderr io.Writer, args Arguments) (err error) 
 		log = slog.New(slog.NewJSONHandler(file, nil))
 		log.Debug("Logging to file", slog.String("file", args.Log))
 	}
-	templStream := jsonrpc2.NewStream(newStdRwc(log, "templStream", stdout, stdin))
-	return run(ctx, log, templStream, args)
+	tndrStream := jsonrpc2.NewStream(newStdRwc(log, "tndrStream", stdout, stdin))
+	return run(ctx, log, tndrStream, args)
 }
 
-func run(ctx context.Context, log *slog.Logger, templStream jsonrpc2.Stream, args Arguments) (err error) {
+func run(ctx context.Context, log *slog.Logger, tndrStream jsonrpc2.Stream, args Arguments) (err error) {
 	log.Info("lsp: starting up...")
 	defer func() {
 		if r := recover(); r != nil {
@@ -107,17 +107,17 @@ func run(ctx context.Context, log *slog.Logger, templStream jsonrpc2.Stream, arg
 	// Create the proxy to sit between.
 	serverProxy := proxy.NewServer(log, goplsServer, cache, diagnosticCache, args.NoPreload)
 
-	// Create templ server.
-	log.Info("creating templ server")
-	_, templConn, templClient := protocol.NewServer(context.Background(), serverProxy, templStream, log)
+	// Create tndr server.
+	log.Info("creating tndr server")
+	_, tndrConn, tndrClient := protocol.NewServer(context.Background(), serverProxy, tndrStream, log)
 	defer func() {
-		if err = templConn.Close(); err != nil {
-			log.Error("failed to close templ connection", slog.Any("error", err))
+		if err = tndrConn.Close(); err != nil {
+			log.Error("failed to close tndr connection", slog.Any("error", err))
 		}
 	}()
 
 	// Allow both the server and the client to initiate outbound requests.
-	clientInit(templClient)
+	clientInit(tndrClient)
 
 	// Start the web server if required.
 	if args.HTTPDebug != "" {
@@ -135,8 +135,8 @@ func run(ctx context.Context, log *slog.Logger, templStream jsonrpc2.Stream, arg
 	select {
 	case <-ctx.Done():
 		log.Info("context closed")
-	case <-templConn.Done():
-		log.Info("templConn closed")
+	case <-tndrConn.Done():
+		log.Info("tndrConn closed")
 	case <-goplsConn.Done():
 		log.Info("goplsConn closed")
 	}

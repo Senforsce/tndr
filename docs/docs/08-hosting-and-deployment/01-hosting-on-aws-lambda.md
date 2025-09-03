@@ -1,6 +1,6 @@
 # Hosting on AWS Lambda
 
-AWS Lambda is a great way to host t1 applications.
+AWS Lambda is a great way to host tndr applications.
 
 The example at https://github.com/senforsce/tndr/tree/main/examples/counter includes AWS CDK code for deploying onto AWS Lambda.
 
@@ -28,7 +28,7 @@ import (
 
 func main() {
 	// Create handlers.
-	log := slog.New(slog.NewJSONHandler(os.Stdout))
+	log := slog.New(slog.NewJSONHandler(os.Stderr))
 	s, err := db.NewCountStore(os.Getenv("TABLE_NAME"), os.Getenv("AWS_REGION"))
 	if err != nil {
 		log.Error("failed to create store", slog.Any("error", err))

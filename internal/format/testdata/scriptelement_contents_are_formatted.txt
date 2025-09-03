@@ -1,0 +1,21 @@
+-- in --
+package test
+
+t1 script(data string) {
+	<script>
+  function log(  something)     {
+	  console.log(something   );
+		}
+	</script>
+}
+
+-- out --
+package test
+
+t1 script(data string) {
+	<script>
+		function log(something) {
+			console.log(something);
+		}
+	</script>
+}

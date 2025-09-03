@@ -5,18 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path"
 	"runtime"
-
-	"go.uber.org/zap"
 )
 
 // Options for the gopls client.
 type Options struct {
 	Log      string
 	RPCTrace bool
+	Remote   string
 }
 
 // AsArguments converts the options into command line arguments for gopls.
@@ -28,21 +28,23 @@ func (opts Options) AsArguments() []string {
 	if opts.RPCTrace {
 		args = append(args, "-rpc.trace")
 	}
+	if opts.Remote != "" {
+		args = append(args, "-remote", opts.Remote)
+	}
 	return args
 }
 
-func findGopls() (location string, err error) {
+func FindGopls() (location string, err error) {
 	executableName := "gopls"
 	if runtime.GOOS == "windows" {
 		executableName = "gopls.exe"
 	}
 
-	_, err = exec.LookPath(executableName)
+	pathLocation, err := exec.LookPath(executableName)
 	if err == nil {
 		// Found on the path.
-		return executableName, nil
+		return pathLocation, nil
 	}
-
 	// Unexpected error.
 	if !errors.Is(err, exec.ErrNotFound) {
 		return "", fmt.Errorf("unexpected error looking for gopls: %w", err)
@@ -71,8 +73,8 @@ func findGopls() (location string, err error) {
 }
 
 // NewGopls starts gopls and opens up a jsonrpc2 connection to it.
-func NewGopls(ctx context.Context, log *zap.Logger, opts Options) (rwc io.ReadWriteCloser, err error) {
-	location, err := findGopls()
+func NewGopls(ctx context.Context, log *slog.Logger, opts Options) (rwc io.ReadWriteCloser, err error) {
+	location, err := FindGopls()
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +84,7 @@ func NewGopls(ctx context.Context, log *zap.Logger, opts Options) (rwc io.ReadWr
 
 // newProcessReadWriteCloser creates a processReadWriteCloser to allow stdin/stdout to be used as
 // a JSON RPC 2.0 transport.
-func newProcessReadWriteCloser(zapLogger *zap.Logger, cmd *exec.Cmd) (rwc processReadWriteCloser, err error) {
+func newProcessReadWriteCloser(logger *slog.Logger, cmd *exec.Cmd) (rwc processReadWriteCloser, err error) {
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
 		return
@@ -97,7 +99,7 @@ func newProcessReadWriteCloser(zapLogger *zap.Logger, cmd *exec.Cmd) (rwc proces
 	}
 	go func() {
 		if err := cmd.Run(); err != nil {
-			zapLogger.Error("gopls command error", zap.Error(err))
+			logger.Error("gopls command error", slog.Any("error", err))
 		}
 	}()
 	return

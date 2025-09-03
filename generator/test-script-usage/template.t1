@@ -1,0 +1,58 @@
+package testscriptusage
+
+script withParameters(a string, b string, c int) {
+	console.log(a, b, c);
+}
+
+script withoutParameters() {
+	alert("hello");
+}
+
+script onClick() {
+	alert("clicked");
+}
+
+t1 Button(text string) {
+	<button onClick={ withParameters("test", text, 123) } onMouseover={ withoutParameters() } type="button">{ text }</button>
+}
+
+script withComment() {
+	//'
+}
+
+script whenButtonIsClicked(event tndr.JSExpression) {
+	console.log(event.target)
+}
+
+t1 ThreeButtons() {
+	@Button("A")
+	@Button("B")
+	<button onMouseover="console.log('mouseover')" type="button">Button C</button>
+	<button hx-on::click="alert('clicked inline')" type="button">Button D</button>
+	<button hx-on::click={ onClick() } type="button">Button E</button>
+	<button onclick={ whenButtonIsClicked(tndr.JSExpression("event")) }>Button F</button>
+	@Conditional(true)
+	@ScriptOnLoad()
+}
+
+script conditionalScript() {
+  alert("conditional");
+}
+
+t1 Conditional(show bool) {
+	<input
+		type="button"
+		value="Click me"
+		if show {
+			onclick={ conditionalScript() }
+		}
+	/>
+}
+
+script alertTest() {
+	alert('testing');
+}
+
+t1 ScriptOnLoad() {
+	<script async crossorigin="true" onload={ alertTest() } src="url.to.some.script"></script>
+}

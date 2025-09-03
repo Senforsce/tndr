@@ -1,0 +1,13 @@
+-- in --
+package goof
+
+t1 Hello() {
+	Hello
+}
+
+-- out --
+package goof
+
+t1 Hello() {
+	Hello
+}

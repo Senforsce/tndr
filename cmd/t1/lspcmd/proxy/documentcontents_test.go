@@ -1,11 +1,12 @@
 package proxy
 
 import (
+	"log/slog"
+	"os"
 	"testing"
 
-	lsp "github.com/a-h/protocol"
 	"github.com/google/go-cmp/cmp"
-	"go.uber.org/zap"
+	lsp "github.com/senforsce/tndr/lsp/protocol"
 )
 
 func TestDocument(t *testing.T) {
@@ -398,7 +399,7 @@ func TestDocument(t *testing.T) {
 		{
 			name: "Add new line with indent to the end of the line",
 			// Based on log entry.
-			// {"level":"info","ts":"2022-06-04T20:55:15+01:00","caller":"proxy/server.go:391","msg":"client -> server: DidChange","params":{"textDocument":{"uri":"file:///Users/adrian/github.com/senforsce/tndr/generator/test-call/template.t1","version":2},"contentChanges":[{"range":{"start":{"line":4,"character":21},"end":{"line":4,"character":21}},"text":"\n\t\t"}]}}
+			// {"level":"info","ts":"2022-06-04T20:55:15+01:00","caller":"proxy/server.go:391","msg":"client -> server: DidChange","params":{"textDocument":{"uri":"file:///Users/adrian/github.com/senforsce/tndr/generator/test-call/template.templ","version":2},"contentChanges":[{"range":{"start":{"line":4,"character":21},"end":{"line":4,"character":21}},"text":"\n\t\t"}]}}
 			start: `package testcall
 
 t1 personTemplate(p person) {
@@ -434,7 +435,7 @@ t1 personTemplate(p person) {
 		{
 			name: "Recreate error smaller",
 			// Based on log entry.
-			// {"level":"info","ts":"2022-06-04T20:55:15+01:00","caller":"proxy/server.go:391","msg":"client -> server: DidChange","params":{"textDocument":{"uri":"file:///Users/adrian/github.com/senforsce/tndr/generator/test-call/template.t1","version":2},"contentChanges":[{"range":{"start":{"line":4,"character":21},"end":{"line":4,"character":21}},"text":"\n\t\t"}]}}
+			// {"level":"info","ts":"2022-06-04T20:55:15+01:00","caller":"proxy/server.go:391","msg":"client -> server: DidChange","params":{"textDocument":{"uri":"file:///Users/adrian/github.com/senforsce/tndr/generator/test-call/template.templ","version":2},"contentChanges":[{"range":{"start":{"line":4,"character":21},"end":{"line":4,"character":21}},"text":"\n\t\t"}]}}
 			start: "line1\n\t\tline2\nline3",
 			operations: []func(d *Document){
 				func(d *Document) {
@@ -468,7 +469,7 @@ t1 personTemplate(p person) {
 		{
 			name: "Recreate error",
 			// Based on log entry.
-			// {"level":"info","ts":"2022-06-04T20:55:15+01:00","caller":"proxy/server.go:391","msg":"client -> server: DidChange","params":{"textDocument":{"uri":"file:///Users/adrian/github.com/senforsce/tndr/generator/test-call/template.t1","version":2},"contentChanges":[{"range":{"start":{"line":4,"character":21},"end":{"line":4,"character":21}},"text":"\n\t\t"}]}}
+			// {"level":"info","ts":"2022-06-04T20:55:15+01:00","caller":"proxy/server.go:391","msg":"client -> server: DidChange","params":{"textDocument":{"uri":"file:///Users/adrian/github.com/senforsce/tndr/generator/test-call/template.templ","version":2},"contentChanges":[{"range":{"start":{"line":4,"character":21},"end":{"line":4,"character":21}},"text":"\n\t\t"}]}}
 			start: ` <footer data-testid="footerTemplate">
 		<div>&copy; { fmt.Sprintf("%d", time.Now().Year()) }</div>
 	</footer>
@@ -510,7 +511,7 @@ t1 personTemplate(p person) {
 		{
 			name: "Insert at start of line",
 			// Based on log entry.
-			// {"level":"info","ts":"2023-03-25T17:17:38Z","caller":"proxy/server.go:393","msg":"client -> server: DidChange","params":{"textDocument":{"uri":"file:///Users/adrian/github.com/senforsce/tndr/generator/test-call/template.t1","version":5},"contentChanges":[{"range":{"start":{"line":6,"character":0},"end":{"line":6,"character":0}},"text":"a"}]}}
+			// {"level":"info","ts":"2023-03-25T17:17:38Z","caller":"proxy/server.go:393","msg":"client -> server: DidChange","params":{"textDocument":{"uri":"file:///Users/adrian/github.com/senforsce/tndr/generator/test-call/template.templ","version":5},"contentChanges":[{"range":{"start":{"line":6,"character":0},"end":{"line":6,"character":0}},"text":"a"}]}}
 			start: `b`,
 			operations: []func(d *Document){
 				func(d *Document) {
@@ -555,9 +556,9 @@ d`,
 	}
 
 	for _, tt := range tests {
+		logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 		t.Run(tt.name, func(t *testing.T) {
-			log := zap.NewExample()
-			d := NewDocument(log, tt.start)
+			d := NewDocument(logger, tt.start)
 			for _, f := range tt.operations {
 				f(d)
 			}

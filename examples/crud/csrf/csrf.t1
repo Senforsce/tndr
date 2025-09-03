@@ -1,0 +1,5 @@
+package csrf
+
+t1 CSRF() {
+	<input type="hidden" name="_csrf" value={ ctx.Value("gorilla.csrf.Token").(string) }/>
+}

@@ -1,11 +1,9 @@
 package main
 
 import (
-	"net/http"
-
+	"github.com/senforsce/tndr"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
-	"github.com/gofiber/fiber/v2/middleware/adaptor"
 )
 
 func main() {
@@ -13,6 +11,7 @@ func main() {
 
 	app.Get("/:name?", func(c *fiber.Ctx) error {
 		name := c.Params("name")
+		c.Locals("name", name)
 		if name == "" {
 			name = "World"
 		}
@@ -24,13 +23,11 @@ func main() {
 }
 
 func NotFoundMiddleware(c *fiber.Ctx) error {
-	return Render(c, NotFound(), t1.WithStatus(http.StatusNotFound))
+	c.Status(fiber.StatusNotFound)
+	return Render(c, NotFound())
 }
 
-func Render(c *fiber.Ctx, component t1.Component, options ...func(*t1.ComponentHandler)) error {
-	componentHandler := t1.Handler(component)
-	for _, o := range options {
-		o(componentHandler)
-	}
-	return adaptor.HTTPHandler(componentHandler)(c)
+func Render(c *fiber.Ctx, component templ.Component) error {
+	c.Set("Content-Type", "text/html")
+	return component.Render(c.Context(), c.Response().BodyWriter())
 }

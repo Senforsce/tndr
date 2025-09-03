@@ -1,0 +1,27 @@
+package testimport
+
+t1 listItem() {
+	<li>
+		{ children... }
+	</li>
+}
+
+t1 list() {
+	<ul>
+		{ children... }
+	</ul>
+}
+
+t1 main() {
+	@list() {
+		@listItem() {
+			<u>Item 1</u>
+		}
+		@listItem() {
+			<u>Item 2</u>
+		}
+		@listItem() {
+			<u>Item 3</u>
+		}
+	}
+}

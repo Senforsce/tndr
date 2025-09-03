@@ -1,0 +1,9 @@
+package testcssmiddleware
+
+css red() {
+	color: red;
+}
+
+t1 render(s string) {
+	<div class={ red }>{ s }</div>
+}

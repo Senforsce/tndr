@@ -2,7 +2,7 @@
 
 Use the standard Go `for` loop for iteration.
 
-```t1 title="component.t1"
+```tndr title="component.t1"
 package main
 
 t1 nameList(items []Item) {

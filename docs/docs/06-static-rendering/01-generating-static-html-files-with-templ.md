@@ -1,6 +1,6 @@
-# Generating static HTML files with t1
+# Generating static HTML files with tndr
 
-t1 components implement the `t1.Component` interface.
+tndr components implement the `tndr.Component` interface.
 
 The interface has a `Render` method which outputs HTML to an `io.Writer` that is passed in.
 
@@ -13,32 +13,32 @@ type Component interface {
 
 In Go, the `io.Writer` interface is implemented by many built-in types in the standard library, including `os.File` (files), `os.Stdout`, and `http.ResponseWriter` (HTTP responses).
 
-This makes it easy to use t1 components in a variety of contexts to generate HTML.
+This makes it easy to use tndr components in a variety of contexts to generate HTML.
 
-To render static HTML files using t1 component, first create a new Go project.
+To render static HTML files using tndr component, first create a new Go project.
 
 ## Setup project
 
 Create a new directory.
 
-```sh
+```bash
 mkdir static-generator
 ```
 
 Initialize a new Go project within it.
 
-```sh
+```bash
 cd static-generator
-go mod init github.com/a-h/t1-examples/static-generator
+go mod init github.com/senforsce/tndr-examples/static-generator
 ```
 
-## Create a t1 file
+## Create a tndr file
 
 To use it, create a `hello.t1` file containing a component.
 
-Components are functions that contain t1 elements, markup, `if`, `switch` and `for` Go expressions.
+Components are functions that contain tndr elements, markup, `if`, `switch` and `for` Go expressions.
 
-```t1 title="hello.t1"
+```tndr title="hello.t1"
 package main
 
 t1 hello(name string) {
@@ -46,20 +46,20 @@ t1 hello(name string) {
 }
 ```
 
-## Generate Go code from the t1 file
+## Generate Go code from the tndr file
 
-Run the `t1 generate` command.
+Run the `tndr generate` command.
 
-```sh
-t1 generate
+```bash
+tndr generate
 ```
 
-t1 will generate a `hello_t1.go` file containing Go code.
+tndr will generate a `hello_t1.go` file containing Go code.
 
-This file will contain a function called `hello` which takes `name` as an argument, and returns a `t1.Component` that renders HTML.
+This file will contain a function called `hello` which takes `name` as an argument, and returns a `tndr.Component` that renders HTML.
 
 ```go
-func hello(name string) t1.Component {
+func hello(name string) tndr.Component {
   // ...
 }
 ```
@@ -94,7 +94,7 @@ func main() {
 
 Running the code will create a file called `hello.html` containing the component's HTML.
 
-```sh
+```bash
 go run *.go
 ```
 

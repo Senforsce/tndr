@@ -18,14 +18,14 @@ import (
 
 	"github.com/andybalholm/brotli"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd/sse"
+	"github.com/senforsce/tndr/internal/htmlfind"
+	"golang.org/x/net/html"
 
 	_ "embed"
 )
 
 //go:embed script.js
 var script string
-
-const scriptTag = `<script src="/_t1/reload/script.js"></script>`
 
 type Handler struct {
 	log    *slog.Logger
@@ -35,8 +35,37 @@ type Handler struct {
 	sse    *sse.Handler
 }
 
-func insertScriptTagIntoBody(body string) (updated string) {
-	return strings.Replace(body, "</body>", scriptTag+"</body>", -1)
+func reloadScript(nonce string) *html.Node {
+	script := &html.Node{
+		Type: html.ElementNode,
+		Data: "script",
+		Attr: []html.Attribute{
+			{Key: "src", Val: "/_t1/reload/script.js"},
+		},
+	}
+	if nonce != "" {
+		script.Attr = append(script.Attr, html.Attribute{Key: "nonce", Val: nonce})
+	}
+	return script
+}
+
+var ErrBodyNotFound = fmt.Errorf("body not found")
+
+func insertScriptTagIntoBody(nonce, body string) (updated string, err error) {
+	n, err := html.Parse(strings.NewReader(body))
+	if err != nil {
+		return body, err
+	}
+	bodyNodes := htmlfind.All(n, htmlfind.Element("body"))
+	if len(bodyNodes) == 0 {
+		return body, ErrBodyNotFound
+	}
+	bodyNodes[0].AppendChild(reloadScript(nonce))
+	buf := new(bytes.Buffer)
+	if err = html.Render(buf, n); err != nil {
+		return body, err
+	}
+	return buf.String(), nil
 }
 
 type passthroughWriteCloser struct {
@@ -51,8 +80,8 @@ const unsupportedContentEncoding = "Unsupported content encoding, hot reload scr
 
 func (h *Handler) modifyResponse(r *http.Response) error {
 	log := h.log.With(slog.String("url", r.Request.URL.String()))
-	if r.Header.Get("t1-skip-modify") == "true" {
-		log.Debug("Skipping response modification because t1-skip-modify header is set")
+	if r.Header.Get("tndr-skip-modify") == "true" {
+		log.Debug("Skipping response modification because tndr-skip-modify header is set")
 		return nil
 	}
 	if contentType := r.Header.Get("Content-Type"); !strings.HasPrefix(contentType, "text/html") {
@@ -93,20 +122,25 @@ func (h *Handler) modifyResponse(r *http.Response) error {
 	if err != nil {
 		return err
 	}
-	defer r.Body.Close()
+	defer func() {
+		_ = r.Body.Close()
+	}()
 	body, err := io.ReadAll(encr)
 	if err != nil {
 		return err
 	}
 
 	// Update it.
-	updated := insertScriptTagIntoBody(string(body))
-	if log.Enabled(r.Request.Context(), slog.LevelDebug) {
-		if len(updated) == len(body) {
-			log.Debug("Reload script not inserted")
-		} else {
-			log.Debug("Reload script inserted")
-		}
+	csp := r.Header.Get("Content-Security-Policy")
+	updated, err := insertScriptTagIntoBody(parseNonce(csp), string(body))
+	if err != nil {
+		log.Warn("Unable to insert reload script", slog.Any("error", err))
+		updated = string(body)
+	}
+	if len(updated) == len(body) {
+		log.Debug("Reload script not inserted")
+	} else {
+		log.Debug("Reload script inserted")
 	}
 
 	// Encode the response.
@@ -126,6 +160,28 @@ func (h *Handler) modifyResponse(r *http.Response) error {
 	r.ContentLength = int64(buf.Len())
 	r.Header.Set("Content-Length", strconv.Itoa(buf.Len()))
 	return nil
+}
+
+func parseNonce(csp string) (nonce string) {
+outer:
+	for _, rawDirective := range strings.Split(csp, ";") {
+		parts := strings.Fields(rawDirective)
+		if len(parts) < 2 {
+			continue
+		}
+		if parts[0] != "script-src" {
+			continue
+		}
+		for _, source := range parts[1:] {
+			source = strings.TrimPrefix(source, "'")
+			source = strings.TrimSuffix(source, "'")
+			if strings.HasPrefix(source, "nonce-") {
+				nonce = source[6:]
+				break outer
+			}
+		}
+	}
+	return nonce
 }
 
 func New(log *slog.Logger, bind string, port int, target *url.URL) (h *Handler) {
@@ -186,11 +242,11 @@ type roundTripper struct {
 
 func (rt *roundTripper) setShouldSkipResponseModificationHeader(r *http.Request, resp *http.Response) {
 	// Instruct the modifyResponse function to skip modifying the response if the
-	// HTTP request has come from HTMX.
-	if r.Header.Get("HX-Request") != "true" {
+	// HTTP request has come from HTMX or Datastar.
+	if r.Header.Get("HX-Request") != "true" && r.Header.Get("Datastar-Request") != "true" {
 		return
 	}
-	resp.Header.Set("t1-skip-modify", "true")
+	resp.Header.Set("tndr-skip-modify", "true")
 }
 
 func (rt *roundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
@@ -202,13 +258,15 @@ func (rt *roundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Body.Close()
+		if err = r.Body.Close(); err != nil {
+			return nil, fmt.Errorf("failed to close request body: %w", err)
+		}
 	}
 
 	// Retry logic.
 	var resp *http.Response
 	var err error
-	for retries := 0; retries < rt.maxRetries; retries++ {
+	for retries := range rt.maxRetries {
 		// Clone the request and set the body.
 		req := r.Clone(r.Context())
 		if bodyBytes != nil {

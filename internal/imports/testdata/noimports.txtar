@@ -1,0 +1,12 @@
+-- fmt.t1 --
+package test
+
+t1 Hello() {
+	<div>Hello</div>
+}
+-- fmt.t1 --
+package test
+
+t1 Hello() {
+	<div>Hello</div>
+}

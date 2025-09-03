@@ -1,0 +1,14 @@
+-- in --
+package main
+
+// test the comment handling.
+t1 test() {
+	Test
+}
+-- out --
+package main
+
+// test the comment handling.
+t1 test() {
+	Test
+}

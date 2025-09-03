@@ -1,4 +1,4 @@
-# Running your first t1 application
+# Running your first tndr application
 
 Let's update the previous application to serve HTML over HTTP instead of writing it to the terminal.
 
@@ -6,7 +6,7 @@ Let's update the previous application to serve HTML over HTTP instead of writing
 
 Update the `main.go` file.
 
-t1 components can be served as a standard HTTP handler using the `t1.Handler` function.
+tndr components can be served as a standard HTTP handler using the `tndr.Handler` function.
 
 ```go title="main.go"
 package main
@@ -20,8 +20,8 @@ import (
 
 func main() {
 	component := hello("John")
-
-	http.Handle("/", t1.Handler(component))
+	
+	http.Handle("/", tndr.Handler(component))
 
 	fmt.Println("Listening on :3000")
 	http.ListenAndServe(":3000", nil)
@@ -32,13 +32,13 @@ func main() {
 
 Running the code will start a web server on port 3000.
 
-```sh
+```bash
 go run *.go
 ```
 
 If you run another terminal session and run `curl` you can see the exact HTML that is returned matches the `hello` component, with the name "John".
 
-```sh
+```bash
 curl localhost:3000
 ```
 

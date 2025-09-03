@@ -33,6 +33,7 @@ require github.com/a-h/lexical v0.0.53
 
 require (
 	github.com/oklog/ulid/v2 v2.1.1 // indirect
+	github.com/rs/cors v1.11.1 // indirect
 	github.com/samber/lo v1.51.0 // indirect
 	github.com/samber/oops v1.19.0 // indirect
 	go.opentelemetry.io/otel v1.29.0 // indirect

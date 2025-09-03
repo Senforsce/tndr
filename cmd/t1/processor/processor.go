@@ -2,20 +2,22 @@ package processor
 
 import (
 	"io/fs"
-	"path"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/senforsce/tndr/internal/skipdir"
 )
 
 type Result struct {
-	FileName string
-	Duration time.Duration
-	Error    error
+	FileName    string
+	Duration    time.Duration
+	Error       error
+	ChangesMade bool
 }
 
-func Process(dir string, f func(fileName string) error, workerCount int, results chan<- Result) {
+func Process(dir string, f func(fileName string) (error, bool), workerCount int, results chan<- Result) {
 	templates := make(chan string)
 	go func() {
 		defer close(templates)
@@ -26,46 +28,36 @@ func Process(dir string, f func(fileName string) error, workerCount int, results
 	ProcessChannel(templates, dir, f, workerCount, results)
 }
 
-func shouldSkipDir(dir string) bool {
-	if dir == "." {
-		return false
-	}
-	if dir == "vendor" || dir == "node_modules" {
-		return true
-	}
-	_, name := path.Split(dir)
-	// These directories are ignored by the Go tool.
-	if strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") {
-		return true
-	}
-	return false
-}
-
 func FindTemplates(srcPath string, output chan<- string) (err error) {
-	return filepath.Walk(srcPath, func(currentPath string, info fs.FileInfo, err error) error {
-		if info.IsDir() && shouldSkipDir(currentPath) {
+	return filepath.WalkDir(srcPath, func(currentPath string, info fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() && skipdir.ShouldSkip(currentPath) {
 			return filepath.SkipDir
 		}
-		if !info.IsDir() && strings.HasSuffix(currentPath, ".t1") {
+		if !info.IsDir() && strings.HasSuffix(currentPath, ".templ") {
 			output <- currentPath
 		}
 		return nil
 	})
 }
 
-func ProcessChannel(templates <-chan string, dir string, f func(fileName string) error, workerCount int, results chan<- Result) {
+func ProcessChannel(templates <-chan string, dir string, f func(fileName string) (error, bool), workerCount int, results chan<- Result) {
 	defer close(results)
 	var wg sync.WaitGroup
 	wg.Add(workerCount)
-	for i := 0; i < workerCount; i++ {
+	for range workerCount {
 		go func() {
 			defer wg.Done()
 			for sourceFileName := range templates {
 				start := time.Now()
+				outErr, outChanged := f(sourceFileName)
 				results <- Result{
-					FileName: sourceFileName,
-					Error:    f(sourceFileName),
-					Duration: time.Since(start),
+					FileName:    sourceFileName,
+					Error:       outErr,
+					Duration:    time.Since(start),
+					ChangesMade: outChanged,
 				}
 			}
 		}()

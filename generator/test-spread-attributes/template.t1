@@ -1,0 +1,33 @@
+package testspreadattributes
+
+t1 BasicTemplate(spread tndr.Attributes) {
+	<div>
+		<a { spread... }>text</a>
+		<div
+			if true {
+				{ spread... }
+			}
+		>text2</div>
+		<div
+			if false {
+				{ spread... }
+			}
+		>text3</div>
+	</div>
+}
+
+t1 BasicTemplateOrdered(spread tndr.OrderedAttributes) {
+	<div>
+		<a { spread... }>text</a>
+		<div
+			if true {
+				{ spread... }
+			}
+		>text2</div>
+		<div
+			if false {
+				{ spread... }
+			}
+		>text3</div>
+	</div>
+}

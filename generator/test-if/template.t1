@@ -1,0 +1,9 @@
+package testif
+
+t1 render(d data) {
+	if d.IsTrue() {
+		{ "True" }
+	} else {
+		{ "False" }
+	}
+}

@@ -4,13 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/senforsce/tndr"
 )
 
 func main() {
 	mux := http.NewServeMux()
 
-	// Serve the t1 page.
-	mux.Handle("/", t1.Handler(page()))
+	// Serve the tndr page.
+	mux.Handle("/", tndr.Handler(page()))
 
 	// Serve static content.
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))

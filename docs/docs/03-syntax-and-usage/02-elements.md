@@ -1,11 +1,11 @@
 # Elements
 
-t1 elements are used to render HTML within t1 components.
+tndr elements are used to render HTML within tndr components.
 
 ```t1 title="button.t1"
 package main
 
-t1 button(text string) {
+tndr button(text string) {
 	<button class="button">{ text }</button>
 }
 ```
@@ -24,23 +24,25 @@ func main() {
 ```
 
 ```html title="Output"
-<button class="button">Click me</button>
+<button class="button">
+ Click me
+</button>
 ```
 
 :::info
-t1 automatically minifies HTML responses, output is shown formatted for readability.
+tndr automatically minifies HTML responses, output is shown formatted for readability.
 :::
 
 ## Tags must be closed
 
-t1 requires that all HTML elements are closed with either a closing tag (`</a>`), or by using a self-closing element (`<hr/>`).
+Unlike HTML, tndr requires that all HTML elements are closed with either a closing tag (`</a>`), or by using a self-closing element (`<hr/>`).
 
-t1 is aware of which HTML elements are "void", and will omit the closing `/` from the element.
+tndr is aware of which HTML elements are "void", and will not include the closing `/` in the output HTML.
 
 ```t1 title="button.t1"
 package main
 
-t1 component() {
+tndr component() {
 	<div>Test</div>
 	<img src="images/test.png"/>
 	<br/>
@@ -55,12 +57,12 @@ t1 component() {
 
 ## Attributes and elements can contain expressions
 
-t1 elements can contain placeholder expressions for attributes and content.
+tndr elements can contain placeholder expressions for attributes and content.
 
 ```t1 title="button.t1"
 package main
 
-t1 button(name string, content string) {
+tndr button(name string, content string) {
 	<button value={ name }>{ content }</button>
 }
 ```

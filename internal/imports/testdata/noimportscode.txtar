@@ -1,0 +1,20 @@
+-- fmt.t1 --
+package test
+
+func test() {
+  // Do nothing.
+}
+
+t1 Hello() {
+	<div>Hello</div>
+}
+-- fmt.t1 --
+package test
+
+func test() {
+	// Do nothing.
+}
+
+t1 Hello() {
+	<div>Hello</div>
+}

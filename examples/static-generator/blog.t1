@@ -1,13 +1,15 @@
 package main
 
-import "path"
-import "github.com/gosimple/slug"
+import (
+	"github.com/gosimple/slug"
+	"path"
+)
 
 t1 headerComponent(title string) {
 	<head><title>{ title }</title></head>
 }
 
-t1 contentComponent(title string, body t1.Component) {
+t1 contentComponent(title string, body tndr.Component) {
 	<body>
 		<h1>{ title }</h1>
 		<div class="content">
@@ -16,7 +18,7 @@ t1 contentComponent(title string, body t1.Component) {
 	</body>
 }
 
-t1 contentPage(title string, body t1.Component) {
+t1 contentPage(title string, body tndr.Component) {
 	<html>
 		@headerComponent(title)
 		@contentComponent(title, body)
@@ -29,7 +31,7 @@ t1 indexPage(posts []Post) {
 		<body>
 			<h1>My Blog</h1>
 			for _, post := range posts {
-				<div><a href={ t1.SafeURL(path.Join(post.Date.Format("2006/01/02"), slug.Make(post.Title), "/")) }>{ post.Title }</a></div>
+				<div><a href={ tndr.SafeURL(path.Join(post.Date.Format("2006/01/02"), slug.Make(post.Title), "/")) }>{ post.Title }</a></div>
 			}
 		</body>
 	</html>

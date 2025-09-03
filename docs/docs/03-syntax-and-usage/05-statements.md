@@ -2,21 +2,21 @@
 
 ## Control flow
 
-Within a t1 element, a subset of Go statements can be used directly.
+Within a tndr element, a subset of Go statements can be used directly.
 
 These Go statements can be used to conditionally render child elements, or to iterate variables.
 
 For individual implementation guides see:
 
-- [if/else](/syntax-and-usage/if-else)
-- [switch](/syntax-and-usage/switch)
-- [for loops](/syntax-and-usage/loops)
+* [if/else](/syntax-and-usage/if-else)
+* [switch](/syntax-and-usage/switch)
+* [for loops](/syntax-and-usage/loops)
 
 ## if/switch/for within text
 
 Go statements can be used without any escaping to make it simple for developers to include them.
 
-The t1 parser assumes that text that starts with `if`, `switch` or `for` denotes the start of one of those expressions as per this example.
+The tndr parser assumes that text that starts with `if`, `switch` or `for` denotes the start of one of those expressions as per this example.
 
 ```t1 title="show-hello.t1"
 package main
@@ -32,8 +32,8 @@ t1 showHelloIfTrue(b bool) {
 
 If you need to start a text block with the words `if`, `switch`, or `for`:
 
-- Use a Go string expression.
-- Capitalise `if`, `switch`, or `for`.
+* Use a Go string expression.
+* Capitalise `if`, `switch`, or `for`.
 
 ```t1 title="paragraph.t1"
 package main
@@ -51,15 +51,15 @@ t1 display(price float64, count int) {
 
 We decided to not require a special prefix for `if`, `switch` and `for` expressions on the basis that we were more likely to want to use a Go control statement than start a text run with those strings.
 
-To reduce the risk of a broken control statement, resulting in printing out the source code of the application, t1 will complain if a text run starts with `if`, `switch` or `for`, but no opening brace `{` is found.
+To reduce the risk of a broken control statement, resulting in printing out the source code of the application, tndr will complain if a text run starts with `if`, `switch` or `for`, but no opening brace `{` is found.
 
-For example, the following code causes the t1 parser to return an error:
+For example, the following code causes the tndr parser to return an error:
 
 ```t1 title="broken-if.t1"
 package main
 
 t1 showIfTrue(b bool) {
-	if b
+	if b 
 	  <p>Hello</p>
 	}
 }
@@ -85,8 +85,8 @@ This also applies to `for` and `switch` statements.
 
 To resolve the issue:
 
-- Use a Go string expression.
-- Capitalise `if`, `switch`, or `for`.
+* Use a Go string expression.
+* Capitalise `if`, `switch`, or `for`.
 
 ```t1 title="paragraph.t1"
 package main

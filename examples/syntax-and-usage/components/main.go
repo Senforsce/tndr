@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"os"
 
 	"github.com/senforsce/tndr"
@@ -12,12 +13,16 @@ import (
 
 func main() {
 	ctx := context.Background()
-	list([]string{"a", "b", "c"}).Render(ctx, os.Stdout)
-	codeList([]string{"A", "B", "C"}).Render(ctx, os.Stdout)
+	if err := list([]string{"a", "b", "c"}).Render(ctx, os.Stdout); err != nil {
+		log.Fatalf("failed to render list: %v", err)
+	}
+	if err := codeList([]string{"A", "B", "C"}).Render(ctx, os.Stdout); err != nil {
+		log.Fatalf("failed to render code list: %v", err)
+	}
 }
 
-func codeList(items []string) t1.Component {
-	return t1.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
+func codeList(items []string) tndr.Component {
+	return tndr.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		if _, err = io.WriteString(w, "<ol>"); err != nil {
 			return
 		}

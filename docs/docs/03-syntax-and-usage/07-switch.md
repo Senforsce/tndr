@@ -1,8 +1,8 @@
 # Switch
 
-t1 uses standard Go `switch` statements which can be used to conditionally render components and elements.
+tndr uses standard Go `switch` statements which can be used to conditionally render components and elements.
 
-```t1 title="component.t1"
+```tndr title="component.t1"
 package main
 
 t1 userTypeDisplay(userType string) {
@@ -31,5 +31,7 @@ func main() {
 ```
 
 ```html title="Output"
-<span> Unknown user </span>
+<span>
+ Unknown user
+</span>
 ```

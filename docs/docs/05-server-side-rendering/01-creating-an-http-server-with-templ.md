@@ -1,8 +1,8 @@
-# Creating an HTTP server with t1
+# Creating an HTTP server with tndr
 
 ### Static pages
 
-To use a t1 component as a HTTP handler, the `t1.Handler` function can be used.
+To use a tndr component as a HTTP handler, the `tndr.Handler` function can be used.
 
 This is suitable for use when the component is not used to display dynamic data.
 
@@ -24,7 +24,7 @@ import (
 )
 
 func main() {
-	http.Handle("/", t1.Handler(hello()))
+	http.Handle("/", tndr.Handler(hello()))
 
 	http.ListenAndServe(":8080", nil)
 }
@@ -34,7 +34,7 @@ func main() {
 
 In the previous example, the `hello` component does not take any parameters. Let's display the time when the server was started instead.
 
-```go title="components.t1"
+```tndr title="components.t1"
 package main
 
 import "time"
@@ -59,15 +59,15 @@ import (
 )
 
 func main() {
-	http.Handle("/", t1.Handler(timeComponent(time.Now())))
-	http.Handle("/404", t1.Handler(notFoundComponent(), t1.WithStatus(http.StatusNotFound)))
+	http.Handle("/", templ.Handler(timeComponent(time.Now())))
+	http.Handle("/404", templ.Handler(notFoundComponent(), templ.WithStatus(http.StatusNotFound)))
 
 	http.ListenAndServe(":8080", nil)
 }
 ```
 
 :::tip
-The `t1.WithStatus`, `t1.WithContentType`, and `t1.WithErrorHandler` functions can be passed as parameters to the `t1.Handler` function to control how content is rendered.
+The `templ.WithStatus`, `templ.WithContentType`, and `templ.WithErrorHandler` functions can be passed as parameters to the `templ.Handler` function to control how content is rendered.
 :::
 
 The output will always be the date and time that the web server was started up, not the current time.
@@ -79,14 +79,14 @@ The output will always be the date and time that the web server was started up, 
 To display the current time, we could update the component to use the `time.Now()` function itself, but this would limit the reusability of the component. It's better when components take parameters for their display values.
 
 :::tip
-Good t1 components are idempotent, pure functions - they don't rely on data that is not passed in through parameters. As long as the parameters are the same, they always return the same HTML - they don't rely on any network calls or disk access.
+Good tndr components are idempotent, pure functions - they don't rely on data that is not passed in through parameters. As long as the parameters are the same, they always return the same HTML - they don't rely on any network calls or disk access.
 :::
 
 ## Displaying dynamic data
 
 Let's update the previous example to display dynamic content.
 
-t1 components implement the `t1.Component` interface, which provides a `Render` method.
+tndr components implement the `tndr.Component` interface, which provides a `Render` method.
 
 The `Render` method can be used within HTTP handlers to write HTML to the `http.ResponseWriter`.
 

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -24,21 +23,21 @@ type ItemToCreate struct {
 
 func main() {
 	sections := []Section{
-		{Name: "Quick Start", SubItems: []string{"Installation", "Creating a simple t1 component", "Running your first t1 application"}},
+		{Name: "Quick Start", SubItems: []string{"Installation", "Creating a simple tndr component", "Running your first tndr application"}},
 		{Name: "Syntax and Usage", SubItems: []string{"Basic syntax", "Expressions", "Conditional HTML attribute expressions", "Loops", "Template composition", "CSS style management"}},
 		{Name: "Core Concepts", SubItems: []string{"Components", "Template generation", "Conditional rendering", "Rendering lists", "Code-only components"}},
-		{Name: "Components", SubItems: []string{"Creating and organizing components", "Adding HTML markup and Go code in templ", "Configuring components with parameters"}},
+		{Name: "Components", SubItems: []string{"Creating and organizing components", "Adding HTML markup and Go code in tndr", "Configuring components with parameters"}},
 		{Name: "Using Go Functions and Variables", SubItems: []string{}},
-		{Name: "Server-side Rendering", SubItems: []string{"Creating an HTTP server with templ", "Example: Counter application"}},
-		{Name: "Static Rendering", SubItems: []string{"Generating static HTML files with templ", "Deploying static files"}},
+		{Name: "Server-side Rendering", SubItems: []string{"Creating an HTTP server with tndr", "Example: Counter application"}},
+		{Name: "Static Rendering", SubItems: []string{"Generating static HTML files with tndr", "Deploying static files"}},
 		{Name: "Hosting and Deployment", SubItems: []string{"Hosting on AWS Lambda", "Hosting using Docker"}},
 		{Name: "Commands and Tools", SubItems: []string{"t1 generate", "t1 fmt", "t1 lsp"}},
 		{Name: "Advanced Topics", SubItems: []string{"Code-only components", "Source maps", "Storybook integration"}},
 		{Name: "Tutorials and Examples", SubItems: []string{"Tutorial: Counter application", "Tutorial: Blog application"}},
-		{Name: "API Reference", SubItems: []string{"t1.Component", "t1.Handler"}},
+		{Name: "API Reference", SubItems: []string{"tndr.Component", "tndr.Handler"}},
 		{Name: "Frequently Asked Questions", SubItems: []string{}},
 		{Name: "Contributing and Support", SubItems: []string{}},
-		{Name: "Best Practices", SubItems: []string{"Keeping t1 components pure and avoiding bugs"}},
+		{Name: "Best Practices", SubItems: []string{"Keeping tndr components pure and avoiding bugs"}},
 		{Name: "Conclusion", SubItems: []string{"Summary and next steps for learning more about templ"}},
 	}
 
@@ -83,7 +82,7 @@ func main() {
 	for _, item := range items {
 		fmt.Println(item.Path)
 		if item.IsFile {
-			ioutil.WriteFile(item.Path, []byte(item.Content), 0644)
+			os.WriteFile(item.Path, []byte(item.Content), 0644)
 			continue
 		}
 		os.Mkdir(item.Path, 0755)

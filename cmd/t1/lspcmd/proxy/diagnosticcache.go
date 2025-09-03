@@ -3,7 +3,7 @@ package proxy
 import (
 	"sync"
 
-	lsp "github.com/a-h/protocol"
+	lsp "github.com/senforsce/tndr/lsp/protocol"
 )
 
 func NewDiagnosticCache() *DiagnosticCache {
@@ -14,7 +14,7 @@ func NewDiagnosticCache() *DiagnosticCache {
 }
 
 type fileDiagnostic struct {
-	t1Diagnostics    []lsp.Diagnostic
+	templDiagnostics []lsp.Diagnostic
 	goplsDiagnostics []lsp.Diagnostic
 }
 
@@ -36,26 +36,26 @@ func (dc *DiagnosticCache) AddTemplDiagnostics(uri string, goDiagnostics []lsp.D
 	defer dc.m.Unlock()
 	diag := dc.cache[uri]
 	diag.goplsDiagnostics = goDiagnostics
-	diag.t1Diagnostics = zeroLengthSliceIfNil(diag.t1Diagnostics)
+	diag.templDiagnostics = zeroLengthSliceIfNil(diag.templDiagnostics)
 	dc.cache[uri] = diag
-	return append(diag.t1Diagnostics, goDiagnostics...)
+	return append(diag.templDiagnostics, goDiagnostics...)
 }
 
 func (dc *DiagnosticCache) ClearTemplDiagnostics(uri string) {
 	dc.m.Lock()
 	defer dc.m.Unlock()
 	diag := dc.cache[uri]
-	diag.t1Diagnostics = make([]lsp.Diagnostic, 0)
+	diag.templDiagnostics = make([]lsp.Diagnostic, 0)
 	dc.cache[uri] = diag
 }
 
-func (dc *DiagnosticCache) AddGoDiagnostics(uri string, t1Diagnostics []lsp.Diagnostic) []lsp.Diagnostic {
-	t1Diagnostics = zeroLengthSliceIfNil(t1Diagnostics)
+func (dc *DiagnosticCache) AddGoDiagnostics(uri string, templDiagnostics []lsp.Diagnostic) []lsp.Diagnostic {
+	templDiagnostics = zeroLengthSliceIfNil(templDiagnostics)
 	dc.m.Lock()
 	defer dc.m.Unlock()
 	diag := dc.cache[uri]
-	diag.t1Diagnostics = t1Diagnostics
+	diag.templDiagnostics = templDiagnostics
 	diag.goplsDiagnostics = zeroLengthSliceIfNil(diag.goplsDiagnostics)
 	dc.cache[uri] = diag
-	return append(diag.goplsDiagnostics, t1Diagnostics...)
+	return append(diag.goplsDiagnostics, templDiagnostics...)
 }

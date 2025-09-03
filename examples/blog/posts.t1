@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 t1 headerTemplate(name string) {
 	<header data-testid="headerTemplate">

@@ -1,0 +1,20 @@
+-- in --
+/********************
+* multiline message *
+********************/
+
+package goof
+
+t1 Hello() {
+	Hello
+}
+-- out --
+/********************
+* multiline message *
+********************/
+
+package goof
+
+t1 Hello() {
+	Hello
+}

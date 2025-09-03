@@ -1,0 +1,8 @@
+package testvoid
+
+t1 render() {
+	<br/>
+	<img src="https://example.com/image.png"/>
+	<br/>
+	<br/>
+}

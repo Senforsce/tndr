@@ -19,34 +19,56 @@ import (
 
 	"github.com/andybalholm/brotli"
 	"github.com/google/go-cmp/cmp"
+	"golang.org/x/net/html"
 )
 
 func TestRoundTripper(t *testing.T) {
-	t.Run("if the HX-Request header is present, set the t1-skip-modify header on the response", func(t *testing.T) {
-		rt := &roundTripper{}
-		req, err := http.NewRequest("GET", "http://example.com", nil)
-		if err != nil {
-			t.Fatalf("unexpected error creating request: %v", err)
-		}
-		req.Header.Set("HX-Request", "true")
-		resp := &http.Response{Header: make(http.Header)}
-		rt.setShouldSkipResponseModificationHeader(req, resp)
-		if resp.Header.Get("t1-skip-modify") != "true" {
-			t.Errorf("expected t1-skip-modify header to be true, got %v", resp.Header.Get("t1-skip-modify"))
-		}
-	})
-	t.Run("if the HX-Request header is not present, do not set the t1-skip-modify header on the response", func(t *testing.T) {
-		rt := &roundTripper{}
-		req, err := http.NewRequest("GET", "http://example.com", nil)
-		if err != nil {
-			t.Fatalf("unexpected error creating request: %v", err)
-		}
-		resp := &http.Response{Header: make(http.Header)}
-		rt.setShouldSkipResponseModificationHeader(req, resp)
-		if resp.Header.Get("t1-skip-modify") != "" {
-			t.Errorf("expected t1-skip-modify header to be empty, got %v", resp.Header.Get("t1-skip-modify"))
-		}
-	})
+	tests := []struct {
+		name         string
+		headers      map[string]string
+		expectedSkip string
+	}{
+		{
+			name:         "HTMX requests skip modification",
+			headers:      map[string]string{"HX-Request": "true"},
+			expectedSkip: "true",
+		},
+		{
+			name:         "Datastar requests skip modification",
+			headers:      map[string]string{"Datastar-Request": "true"},
+			expectedSkip: "true",
+		},
+		{
+			name:         "Non-HTMX and Datastar requests do not skip modification",
+			headers:      map[string]string{},
+			expectedSkip: "",
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			rt := &roundTripper{}
+			req := httptest.NewRequest("GET", "http://example.com", nil)
+			for k, v := range tc.headers {
+				req.Header.Set(k, v)
+			}
+			resp := &http.Response{Header: make(http.Header)}
+			rt.setShouldSkipResponseModificationHeader(req, resp)
+			if resp.Header.Get("tndr-skip-modify") != tc.expectedSkip {
+				t.Errorf("expected tndr-skip-modify header to be %q, got %q", tc.expectedSkip, resp.Header.Get("tndr-skip-modify"))
+			}
+		})
+	}
+}
+
+func getScriptTag(t *testing.T, nonce string) string {
+	script := reloadScript(nonce)
+	var buf bytes.Buffer
+	err := html.Render(&buf, script)
+	if err != nil {
+		t.Fatalf("unexpected error rendering script tag: %v", err)
+	}
+	return buf.String()
 }
 
 func TestProxy(t *testing.T) {
@@ -85,7 +107,7 @@ func TestProxy(t *testing.T) {
 			t.Errorf("unexpected response body (-got +want):\n%s", diff)
 		}
 	})
-	t.Run("plain: if the response contains t1-skip-modify header, it is not modified", func(t *testing.T) {
+	t.Run("plain: if the response contains tndr-skip-modify header, it is not modified", func(t *testing.T) {
 		// Arrange
 		r := &http.Response{
 			Body:   io.NopCloser(strings.NewReader(`Hello`)),
@@ -99,7 +121,7 @@ func TestProxy(t *testing.T) {
 		}
 		r.Header.Set("Content-Type", "text/html")
 		r.Header.Set("Content-Length", "5")
-		r.Header.Set("t1-skip-modify", "true")
+		r.Header.Set("tndr-skip-modify", "true")
 
 		// Act
 		log := slog.New(slog.NewJSONHandler(io.Discard, nil))
@@ -136,16 +158,107 @@ func TestProxy(t *testing.T) {
 		r.Header.Set("Content-Type", "text/html, charset=utf-8")
 		r.Header.Set("Content-Length", "26")
 
-		expectedString := insertScriptTagIntoBody(`<html><body></body></html>`)
-		if !strings.Contains(expectedString, scriptTag) {
+		expectedString, err := insertScriptTagIntoBody("", `<html><body></body></html>`)
+		if err != nil {
+			t.Fatalf("unexpected error inserting script: %v", err)
+		}
+		if !strings.Contains(expectedString, getScriptTag(t, "")) {
 			t.Fatalf("expected the script tag to be inserted, but it wasn't: %q", expectedString)
 		}
 
 		// Act
 		log := slog.New(slog.NewJSONHandler(io.Discard, nil))
 		h := New(log, "127.0.0.1", 7474, &url.URL{Scheme: "http", Host: "example.com"})
-		err := h.modifyResponse(r)
+		if err = h.modifyResponse(r); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Assert
+		if r.Header.Get("Content-Length") != fmt.Sprintf("%d", len(expectedString)) {
+			t.Errorf("expected content length to be %d, got %v", len(expectedString), r.Header.Get("Content-Length"))
+		}
+		actualBody, err := io.ReadAll(r.Body)
 		if err != nil {
+			t.Fatalf("unexpected error reading response: %v", err)
+		}
+		if diff := cmp.Diff(expectedString, string(actualBody)); diff != "" {
+			t.Errorf("unexpected response body (-got +want):\n%s", diff)
+		}
+	})
+	t.Run("plain: body tags get the script inserted with nonce", func(t *testing.T) {
+		// Arrange
+		r := &http.Response{
+			Body:   io.NopCloser(strings.NewReader(`<html><body></body></html>`)),
+			Header: make(http.Header),
+			Request: &http.Request{
+				URL: &url.URL{
+					Scheme: "http",
+					Host:   "example.com",
+				},
+			},
+		}
+		r.Header.Set("Content-Type", "text/html, charset=utf-8")
+		r.Header.Set("Content-Length", "26")
+		const nonce = "this-is-the-nonce"
+		r.Header.Set("Content-Security-Policy", fmt.Sprintf("script-src 'nonce-%s'", nonce))
+
+		expectedString, err := insertScriptTagIntoBody(nonce, `<html><body></body></html>`)
+		if err != nil {
+			t.Fatalf("unexpected error inserting script: %v", err)
+		}
+		if !strings.Contains(expectedString, getScriptTag(t, nonce)) {
+			t.Fatalf("expected the script tag to be inserted, but it wasn't: %q", expectedString)
+		}
+
+		// Act
+		log := slog.New(slog.NewJSONHandler(io.Discard, nil))
+		h := New(log, "127.0.0.1", 7474, &url.URL{Scheme: "http", Host: "example.com"})
+		if err = h.modifyResponse(r); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Assert
+		if r.Header.Get("Content-Length") != fmt.Sprintf("%d", len(expectedString)) {
+			t.Errorf("expected content length to be %d, got %v", len(expectedString), r.Header.Get("Content-Length"))
+		}
+		actualBody, err := io.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("unexpected error reading response: %v", err)
+		}
+		if diff := cmp.Diff(expectedString, string(actualBody)); diff != "" {
+			t.Errorf("unexpected response body (-got +want):\n%s", diff)
+		}
+	})
+	t.Run("plain: body tags get the script inserted ignoring js with body tags", func(t *testing.T) {
+		// Arrange
+		r := &http.Response{
+			Body:   io.NopCloser(strings.NewReader(`<html><body><script>console.log("<body></body>")</script></body></html>`)),
+			Header: make(http.Header),
+			Request: &http.Request{
+				URL: &url.URL{
+					Scheme: "http",
+					Host:   "example.com",
+				},
+			},
+		}
+		r.Header.Set("Content-Type", "text/html, charset=utf-8")
+		r.Header.Set("Content-Length", "26")
+
+		expectedString, err := insertScriptTagIntoBody("", `<html><body><script>console.log("<body></body>")</script></body></html>`)
+		if err != nil {
+			t.Fatalf("unexpected error inserting script: %v", err)
+		}
+		if !strings.Contains(expectedString, getScriptTag(t, "")) {
+			t.Fatalf("expected the script tag to be inserted, but it wasn't: %q", expectedString)
+		}
+		if !strings.Contains(expectedString, `console.log("<body></body>")`) {
+			t.Fatalf("expected the script tag to be inserted, but mangled the html: %q", expectedString)
+		}
+
+		// Act
+		log := slog.New(slog.NewJSONHandler(io.Discard, nil))
+		h := New(log, "127.0.0.1", 7474, &url.URL{Scheme: "http", Host: "example.com"})
+		if err = h.modifyResponse(r); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -208,9 +321,14 @@ func TestProxy(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error writing gzip: %v", err)
 		}
-		gzw.Close()
+		if err = gzw.Close(); err != nil {
+			t.Fatalf("unexpected error closing gzip writer: %v", err)
+		}
 
-		expectedString := insertScriptTagIntoBody(body)
+		expectedString, err := insertScriptTagIntoBody("", body)
+		if err != nil {
+			t.Fatalf("unexpected error inserting script: %v", err)
+		}
 
 		var expectedBytes bytes.Buffer
 		gzw = gzip.NewWriter(&expectedBytes)
@@ -218,7 +336,9 @@ func TestProxy(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error writing gzip: %v", err)
 		}
-		gzw.Close()
+		if err = gzw.Close(); err != nil {
+			t.Fatalf("unexpected error closing gzip writer: %v", err)
+		}
 		expectedLength := len(expectedBytes.Bytes())
 
 		r := &http.Response{
@@ -269,9 +389,14 @@ func TestProxy(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error writing gzip: %v", err)
 		}
-		brw.Close()
+		if err = brw.Close(); err != nil {
+			t.Fatalf("unexpected error closing brotli writer: %v", err)
+		}
 
-		expectedString := insertScriptTagIntoBody(body)
+		expectedString, err := insertScriptTagIntoBody("", body)
+		if err != nil {
+			t.Fatalf("unexpected error inserting script: %v", err)
+		}
 
 		var expectedBytes bytes.Buffer
 		brw = brotli.NewWriter(&expectedBytes)
@@ -279,7 +404,9 @@ func TestProxy(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error writing gzip: %v", err)
 		}
-		brw.Close()
+		if err = brw.Close(); err != nil {
+			t.Fatalf("unexpected error closing brotli writer: %v", err)
+		}
 		expectedLength := len(expectedBytes.Bytes())
 
 		r := &http.Response{
@@ -360,7 +487,9 @@ func TestProxy(t *testing.T) {
 				errChan <- err
 				return
 			}
-			defer resp.Body.Close()
+			defer func() {
+				_ = resp.Body.Close()
+			}()
 
 			sseListening <- true
 			lines := []string{}
@@ -483,4 +612,60 @@ func (h *testLogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 
 func (h *testLogHandler) WithGroup(name string) slog.Handler {
 	return h
+}
+
+func TestParseNonce(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		csp      string
+		expected string
+	}{
+		{
+			name:     "empty csp",
+			csp:      "",
+			expected: "",
+		},
+		{
+			name:     "simple csp",
+			csp:      "script-src 'nonce-oLhVst3hTAcxI734qtB0J9Qc7W4qy09C'",
+			expected: "oLhVst3hTAcxI734qtB0J9Qc7W4qy09C",
+		},
+		{
+			name:     "simple csp without single quote",
+			csp:      "script-src nonce-oLhVst3hTAcxI734qtB0J9Qc7W4qy09C",
+			expected: "oLhVst3hTAcxI734qtB0J9Qc7W4qy09C",
+		},
+		{
+			name:     "complete csp",
+			csp:      "default-src 'self'; frame-ancestors 'self'; form-action 'self'; script-src 'strict-dynamic' 'nonce-4VOtk0Uo1l7pwtC';",
+			expected: "4VOtk0Uo1l7pwtC",
+		},
+		{
+			name:     "mdn example 1",
+			csp:      "default-src 'self'",
+			expected: "",
+		},
+		{
+			name:     "mdn example 2",
+			csp:      "default-src 'self' *.trusted.com",
+			expected: "",
+		},
+		{
+			name:     "mdn example 3",
+			csp:      "default-src 'self'; img-src *; media-src media1.com media2.com; script-src userscripts.example.com",
+			expected: "",
+		},
+		{
+			name:     "mdn example 3 multiple sources",
+			csp:      "default-src 'self'; img-src *; media-src media1.com media2.com; script-src userscripts.example.com foo.com 'strict-dynamic' 'nonce-4VOtk0Uo1l7pwtC'",
+			expected: "4VOtk0Uo1l7pwtC",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			nonce := parseNonce(tc.csp)
+			if nonce != tc.expected {
+				t.Errorf("expected nonce to be %s, but got %s", tc.expected, nonce)
+			}
+		})
+	}
 }

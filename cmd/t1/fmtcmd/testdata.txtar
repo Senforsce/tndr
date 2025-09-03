@@ -1,0 +1,66 @@
+-- a.t1 --
+package test
+
+t1 a() {
+	<div><p class={tndr.Class("mapped")}>A
+</p></div>
+}
+-- a.t1 --
+package test
+
+t1 a() {
+	<div>
+		<p class={ tndr.Class("mapped") }>
+			A
+		</p>
+	</div>
+}
+-- b.t1 --
+package test
+
+t1 b() {
+	<div><p>B
+</p></div>
+}
+-- b.t1 --
+package test
+
+t1 b() {
+	<div>
+		<p>
+			B
+		</p>
+	</div>
+}
+-- c.t1 --
+package test
+
+t1 c() {
+	<div>
+		<p>
+			C
+		</p>
+	</div>
+}
+-- c.t1 --
+package test
+
+t1 c() {
+	<div>
+		<p>
+			C
+		</p>
+	</div>
+}
+-- d.t1 --
+package test
+
+t1 c(s string) {
+  <div s= {s}/>
+}
+-- d.t1 --
+package test
+
+t1 c(s string) {
+  <div s={ s }/>
+}

@@ -6,14 +6,14 @@ https://github.com/senforsce/tndr/tree/main/examples/counter
 
 The application is divided up into multiple packages, each with its own purpose.
 
-- `cdk` - Infrastructure setup for deploying the application.
-- `components` - t1 components.
-- `db` - Database access code used to increment and get counts.
-- `handlers` - HTTP handlers.
-- `lambda` - The AWS Lambda entry point.
-- `services` - Services used by the handlers.
-- `session` - Middleware for implementing HTTP session IDs.
-- `main.go` - Used to run the application locally.
+* `cdk` - Infrastructure setup for deploying the application.
+* `components` - tndr components.
+* `db` - Database access code used to increment and get counts.
+* `handlers` - HTTP handlers.
+* `lambda` - The AWS Lambda entry point.
+* `services` - Services used by the handlers.
+* `session` - Middleware for implementing HTTP session IDs.
+* `main.go` - Used to run the application locally.
 
 ## Application architecture
 
@@ -27,19 +27,19 @@ graph LR
     handler -- renders --> components[Components]
 ```
 
-- HTTP Handler
-  - Processes HTTP requests
-  - Does not contain application logic itself
-  - Uses `services` that carry out application logic
-  - Takes the responses from `services` and uses `components` to render HTML
-  - Creates HTTP responses
-- Services
-  - Carries out application logic such as orchestrating API calls, or making database calls
-  - Does not do anything related to HTML or HTTP
-  - Is not aware of the specifics of database calls
-- Database access code
-  - Handles database activity such as inserting and querying records
-  - Ensures that the database representation (`records`) doesn't leak to the service layer
+* HTTP Handler
+  * Processes HTTP requests
+  * Does not contain application logic itself
+  * Uses `services` that carry out application logic
+  * Takes the responses from `services` and uses `components` to render HTML
+  * Creates HTTP responses
+* Services
+  * Carries out application logic such as orchestrating API calls, or making database calls
+  * Does not do anything related to HTML or HTTP
+  * Is not aware of the specifics of database calls
+* Database access code
+  * Handles database activity such as inserting and querying records
+  * Ensures that the database representation (`records`) doesn't leak to the service layer
 
 A more complex application may have a `models` package containing plain structs that represent common data structures in the application, such as `User`.
 
@@ -55,7 +55,7 @@ To ensure that each part of the application is initialized with its dependencies
 
 As per https://go.dev/wiki/CodeReviewComments#interfaces the HTTP handler defines the interface that it's expecting, rather than the service defining its own interface.
 
-```go title="services/count.go"
+```go title="handlers/default.go"
 type CountService interface {
 	Increment(ctx context.Context, it services.IncrementType, sessionID string) (counts services.Counts, err error)
 	Get(ctx context.Context, sessionID string) (counts services.Counts, err error)
@@ -82,10 +82,10 @@ Dependency injection frameworks are not typically used in Go. If you're coming f
 
 ## HTTP layer
 
-This HTTP handler reads HTTP requests, uses the `CountService` to `Get` or `Increment` the counters, and renders the t1 Components.
+This HTTP handler reads HTTP requests, uses the `CountService` to `Get` or `Increment` the counters, and renders the tndr Components.
 
 :::note
-Note that the `View` method uses the t1 Components from the `components` directory to render the page.
+Note that the `View` method uses the tndr Components from the `components` directory to render the page.
 :::
 
 ```go "title="handlers/default.go"
@@ -226,7 +226,7 @@ import (
 )
 
 func main() {
-	log := slog.New(slog.NewJSONHandler(os.Stdout))
+	log := slog.New(slog.NewJSONHandler(os.Stderr))
 	s, err := db.NewCountStore(os.Getenv("TABLE_NAME"), os.Getenv("AWS_REGION"))
 	if err != nil {
 		log.Error("failed to create store", slog.Any("error", err))

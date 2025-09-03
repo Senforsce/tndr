@@ -1,0 +1,24 @@
+-- in --
+package main
+
+t1 test() {
+	<div>
+		Linebreaks<br/>and<hr/>rules<br/>for<br/>spacing
+	</div>
+}
+-- out --
+package main
+
+t1 test() {
+	<div>
+		Linebreaks
+		<br/>
+		and
+		<hr/>
+		rules
+		<br/>
+		for
+		<br/>
+		spacing
+	</div>
+}

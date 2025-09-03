@@ -2,15 +2,33 @@ package gintemplrenderer
 
 import (
 	"context"
+	"github.com/gin-gonic/gin/render"
 	"net/http"
 
-	"github.com/gin-gonic/gin/render"
 	"github.com/senforsce/tndr"
 )
 
-var Default = &Renderer{}
+var Default = &HTMLTemplRenderer{}
 
-func New(ctx context.Context, status int, component t1.Component) *Renderer {
+type HTMLTemplRenderer struct {
+	FallbackHtmlRenderer render.HTMLRender
+}
+
+func (r *HTMLTemplRenderer) Instance(s string, d any) render.Render {
+	templData, ok := d.(templ.Component)
+	if !ok {
+		if r.FallbackHtmlRenderer != nil {
+			return r.FallbackHtmlRenderer.Instance(s, d)
+		}
+	}
+	return &Renderer{
+		Ctx:       context.Background(),
+		Status:    -1,
+		Component: templData,
+	}
+}
+
+func New(ctx context.Context, status int, component templ.Component) *Renderer {
 	return &Renderer{
 		Ctx:       ctx,
 		Status:    status,
@@ -21,12 +39,14 @@ func New(ctx context.Context, status int, component t1.Component) *Renderer {
 type Renderer struct {
 	Ctx       context.Context
 	Status    int
-	Component t1.Component
+	Component templ.Component
 }
 
 func (t Renderer) Render(w http.ResponseWriter) error {
 	t.WriteContentType(w)
-	w.WriteHeader(t.Status)
+	if t.Status != -1 {
+		w.WriteHeader(t.Status)
+	}
 	if t.Component != nil {
 		return t.Component.Render(t.Ctx, w)
 	}
@@ -35,16 +55,4 @@ func (t Renderer) Render(w http.ResponseWriter) error {
 
 func (t Renderer) WriteContentType(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-}
-
-func (t *Renderer) Instance(name string, data any) render.Render {
-	t1Data, ok := data.(t1.Component)
-	if !ok {
-		return nil
-	}
-	return &Renderer{
-		Ctx:       context.Background(),
-		Status:    http.StatusOK,
-		Component: t1Data,
-	}
 }

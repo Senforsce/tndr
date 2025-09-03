@@ -1,0 +1,21 @@
+-- in --
+package test
+
+t1 conditionalAttributes(addClass bool) {
+	<div id="conditional" if addClass {
+		class="itWasTrue"
+	}
+	width="300">Content</div>
+}
+-- out --
+package test
+
+t1 conditionalAttributes(addClass bool) {
+	<div
+		id="conditional"
+		if addClass {
+			class="itWasTrue"
+		}
+		width="300"
+	>Content</div>
+}

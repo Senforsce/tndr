@@ -1,14 +1,14 @@
-package t1
+package tndr
 
 import (
 	"encoding/json"
 )
 
 // JSONString returns a JSON encoded string of v.
-func JSONString(v any) string {
+func JSONString(v any) (string, error) {
 	b, err := json.Marshal(v)
 	if err != nil {
-		return ""
+		return "", err
 	}
-	return string(b)
+	return string(b), nil
 }

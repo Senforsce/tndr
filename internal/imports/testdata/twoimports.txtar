@@ -1,0 +1,21 @@
+-- fmt.t1 --
+package test
+
+t1 Hello(name string) {
+	<div id={ strconv.Atoi("123") }>
+		{ fmt.Sprintf("Hello, %s!", name) }
+	</div>
+}
+-- fmt.t1 --
+package test
+
+import (
+	"fmt"
+	"strconv"
+)
+
+t1 Hello(name string) {
+	<div id={ strconv.Atoi("123") }>
+		{ fmt.Sprintf("Hello, %s!", name) }
+	</div>
+}

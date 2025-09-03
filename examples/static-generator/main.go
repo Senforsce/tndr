@@ -20,8 +20,8 @@ type Post struct {
 	Content string
 }
 
-func Unsafe(html string) t1.Component {
-	return t1.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
+func Unsafe(html string) tndr.Component {
+	return tndr.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		_, err = io.WriteString(w, html)
 		return
 	})
@@ -100,7 +100,7 @@ Top May Day Activities in the UK:
 		// Create an unsafe component containing raw HTML.
 		content := Unsafe(buf.String())
 
-		// Use t1 to render the template containing the raw HTML.
+		// Use tndr to render the template containing the raw HTML.
 		err = contentPage(post.Title, content).Render(context.Background(), f)
 		if err != nil {
 			log.Fatalf("failed to write output file: %v", err)

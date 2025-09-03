@@ -1,0 +1,14 @@
+-- fmt.t1 --
+package test
+
+t1 Hello(name string) {
+	{ fmt.Sprintf("Hello, %s!", name) }
+}
+-- fmt.t1 --
+package test
+
+import "fmt"
+
+t1 Hello(name string) {
+	{ fmt.Sprintf("Hello, %s!", name) }
+}

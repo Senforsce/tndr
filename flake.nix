@@ -1,10 +1,15 @@
 {
-  description = "thunderf1sh";
+  description = "tndr";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     gitignore = {
       url = "github:hercules-ci/gitignore.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    version = {
+      url = "github:a-h/version/0.0.10";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     xc = {
@@ -13,7 +18,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, gitignore, xc }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, gitignore, version, xc }:
     let
       allSystems = [
         "x86_64-linux" # 64-bit Intel/AMD Linux
@@ -23,64 +28,76 @@
       ];
       forAllSystems = f: nixpkgs.lib.genAttrs allSystems (system: f {
         inherit system;
-        pkgs = import nixpkgs { inherit system; };
+        pkgs =
+          let
+            pkgs-unstable = import nixpkgs-unstable { inherit system; };
+          in
+          import nixpkgs {
+            inherit system;
+            overlays = [
+              (final: prev: {
+                gopls = pkgs-unstable.gopls;
+                version = version.packages.${system}.default; # Used to apply version numbers to the repo.
+                xc = xc.packages.${system}.xc;
+              })
+            ];
+          };
       });
     in
     {
-      packages = forAllSystems ({ pkgs, ... }: rec {
-        default = thunderfish;
+      packages = forAllSystems ({ pkgs, ... }:
+        rec {
+          default = tndr;
 
-        thunderfish = pkgs.buildGo121Module {
-          name = "thunderfish";
-          src = gitignore.lib.gitignoreSource ./.;
-          subPackages = [ "cmd/t1" ];
-          vendorHash = "sha256-4tHofTnSNI/MBmrGdGsLNoXjxUC0+Gwp3PzzUwfUkQU=";
-          CGO_ENABLED = 0;
-          flags = [
-            "-trimpath"
-          ];
-          ldflags = [
-            "-s"
-            "-w"
-            "-extldflags -static"
-          ];
-        };
-
-        thunderf1sh-docs = pkgs.buildNpmPackage {
-          name = "thunderf1sh-docs";
-          src = gitignore.lib.gitignoreSource ./docs;
-          npmDepsHash = "sha256-i6clvSyHtQEGl2C/wcCXonl1W/Kxq7WPTYH46AhUvDM=";
-          installPhase = ''
-            mkdir -p $out/share
-            cp -r build/ $out/share/docs
-          '';
-        };
-      });
+          tndr = pkgs.buildGo124Module {
+            name = "tndr";
+            subPackages = [ "cmd/tndr" ];
+            src = gitignore.lib.gitignoreSource ./.;
+            vendorHash = "sha256-pVZjZCXT/xhBCMyZdR7kEmB9jqhTwRISFp63bQf6w5A=";
+            env = {
+              CGO_ENABLED = 0;
+            };
+            flags = [
+              "-trimpath"
+            ];
+            ldflags = [
+              "-s"
+              "-w"
+              "-extldflags -static"
+            ];
+          };
+        });
 
       # `nix develop` provides a shell containing development tools.
-      devShell = forAllSystems ({ system, pkgs }:
+      devShell = forAllSystems ({ pkgs, ... }:
         pkgs.mkShell {
-          buildInputs = with pkgs; [
-            (golangci-lint.override { buildGoModule = buildGo121Module; })
-            go_1_21
-            goreleaser
-            nodejs
-            xc.packages.${system}.xc
+          buildInputs = [
+            pkgs.golangci-lint
+            pkgs.cosign # Used to sign container images.
+            pkgs.esbuild # Used to package JS examples.
+            pkgs.go
+            pkgs.gopls
+            pkgs.goreleaser
+            pkgs.gotestsum
+            pkgs.ko # Used to build Docker images.
+            pkgs.nodejs # Used to build tndr-docs.
+            pkgs.nodePackages.prettier # Used for formatting JS and CSS.
+            pkgs.version
+            pkgs.xc
           ];
         });
 
-      # This flake outputs an overlay that can be used to add t1 and
-      # thunderf1sh-docs to nixpkgs as per https://senforsce.com/thunderf1sh/quick-start/installation/#nix
+      # This flake outputs an overlay that can be used to add tndr and
+      # tndr-docs to nixpkgs as per https://senforsce.com/docs/tndr/quick-start/installation/#nix
       #
       # Example usage:
       #
       # nixpkgs.overlays = [
-      #   inputs.thunderf1sh.overlays.default
+      #   inputs.tndr.overlays.default
       # ];
       overlays.default = final: prev: {
-        thunderf1sh = self.packages.${final.stdenv.system}.thunderf1sh;
-        thunderf1sh-docs = self.packages.${final.stdenv.system}.thunderf1sh-docs;
+        tndr = self.packages.${final.stdenv.system}.tndr;
+        tndr-docs = self.packages.${final.stdenv.system}.tndr-docs;
       };
     };
 }
-

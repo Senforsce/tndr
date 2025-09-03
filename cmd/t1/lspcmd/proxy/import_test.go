@@ -10,14 +10,14 @@ import (
 
 func TestFindLastImport(t *testing.T) {
 	tests := []struct {
-		name        string
-		t1Contents  string
-		packageName string
-		expected    string
+		name         string
+		tndrContents string
+		packageName  string
+		expected     string
 	}{
 		{
 			name: "if there are no imports, add a single line import",
-			t1Contents: `package main
+			tndrContents: `package main
 
 t1 example() {
 }
@@ -33,7 +33,7 @@ t1 example() {
 		},
 		{
 			name: "if there is an existing single-line imports, add one at the end",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import "strings"
 
@@ -52,7 +52,7 @@ t1 example() {
 		},
 		{
 			name: "if there are multiple existing single-line imports, add one at the end",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import "strings"
 import "fmt"
@@ -73,7 +73,7 @@ t1 example() {
 		},
 		{
 			name: "if there are existing multi-line imports, add one at the end",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import (
 	"strings"
@@ -96,7 +96,7 @@ t1 example() {
 		},
 		{
 			name: "ignore imports that happen after templates",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import "strings"
 
@@ -119,7 +119,7 @@ import "other"
 		},
 		{
 			name: "ignore imports that happen after funcs in the file",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import "strings"
 
@@ -142,7 +142,7 @@ import "other"
 		},
 		{
 			name: "ignore imports that happen after css expressions in the file",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import "strings"
 
@@ -165,7 +165,7 @@ import "other"
 		},
 		{
 			name: "ignore imports that happen after script expressions in the file",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import "strings"
 
@@ -188,7 +188,7 @@ import "other"
 		},
 		{
 			name: "ignore imports that happen after var expressions in the file",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import "strings"
 
@@ -209,7 +209,7 @@ import "other"
 		},
 		{
 			name: "ignore imports that happen after const expressions in the file",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import "strings"
 
@@ -230,7 +230,7 @@ import "other"
 		},
 		{
 			name: "ignore imports that happen after type expressions in the file",
-			t1Contents: `package main
+			tndrContents: `package main
 
 import "strings"
 
@@ -252,7 +252,7 @@ import "other"
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			lines := strings.Split(test.t1Contents, "\n")
+			lines := strings.Split(test.tndrContents, "\n")
 			imp := addImport(lines, fmt.Sprintf("%q", test.packageName))
 			textWithoutNewline := strings.TrimSuffix(imp.Text, "\n")
 			actualLines := append(lines[:imp.LineIndex], append([]string{textWithoutNewline}, lines[imp.LineIndex:]...)...)

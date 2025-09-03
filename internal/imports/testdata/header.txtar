@@ -1,0 +1,10 @@
+-- fmt_templ.t1 --
+package test
+
+var x = fmt.Sprintf("Hello")
+-- fmt_templ.t1 --
+package test
+
+import "fmt"
+
+var x = fmt.Sprintf("Hello")

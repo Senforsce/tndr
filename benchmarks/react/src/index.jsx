@@ -21,7 +21,7 @@ const p = {
 // Render test x 114,131 ops/sec ±0.27% (97 runs sampled)
 // There are 1,000,000,000 nanoseconds in a second.
 // 1,000,000,000ns / 114,131 ops = 8,757.5 ns per operation.
-// The t1 equivalent is 340 ns per operation.
+// The tndr equivalent is 340 ns per operation.
 const suite = new Benchmark.Suite;
 
 const test = suite.add('Render test',

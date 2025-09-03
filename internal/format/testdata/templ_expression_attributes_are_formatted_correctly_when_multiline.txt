@@ -1,0 +1,34 @@
+-- in --
+package main
+
+t1 x(id string, class string) {
+<button
+id={id}
+name={
+      "name"
+  }
+class={ 
+      "blue",
+    class,
+		map[string]bool{
+		"a": true,
+		},
+}
+></button>
+}
+-- out --
+package main
+
+t1 x(id string, class string) {
+	<button
+		id={ id }
+		name={ "name" }
+		class={
+			"blue",
+			class,
+			map[string]bool{
+				"a": true,
+			},
+		}
+	></button>
+}

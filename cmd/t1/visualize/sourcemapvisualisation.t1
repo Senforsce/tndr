@@ -14,22 +14,26 @@ css code() {
 	font-family: monospace;
 }
 
-t1 combine(t1FileName string, left, right t1.Component) {
+t1 combine(tndrFileName string, left, right tndr.Component) {
 	<html>
 		<head>
-			<title>{ t1FileName }- Source Map Visualisation</title>
+			<title>{ tndrFileName }- Source Map Visualisation</title>
 			<style type="text/css">
-				.mapped { background-color: green }
-				.highlighted { background-color: yellow }
+				.mapped {
+					background-color: green;
+				}
+				.highlighted {
+					background-color: yellow;
+				}
 			</style>
 		</head>
 		<body>
-			<h1>{ t1FileName }</h1>
-			<div class={ t1.Classes(row()) }>
-				<div class={ t1.Classes(column(), code()) }>
+			<h1>{ tndrFileName }</h1>
+			<div class={ tndr.Classes(row()) }>
+				<div class={ tndr.Classes(column(), code()) }>
 					@left
 				</div>
-				<div class={ t1.Classes(column(), code()) }>
+				<div class={ tndr.Classes(column(), code()) }>
 					@right
 				</div>
 			</div>
@@ -60,5 +64,5 @@ script removeHighlight(sourceId, targetId string) {
 }
 
 t1 mappedCharacter(s string, sourceID, targetID string) {
-	<span class={ t1.Classes(t1.Class("mapped"), t1.Class(sourceID), t1.Class(targetID)) } onMouseOver={ highlight(sourceID, targetID) } onMouseOut={ removeHighlight(sourceID, targetID) }>{ s }</span>
+	<span class={ tndr.Classes(tndr.Class("mapped"), tndr.Class(sourceID), tndr.Class(targetID)) } onMouseOver={ highlight(sourceID, targetID) } onMouseOut={ removeHighlight(sourceID, targetID) }>{ s }</span>
 }

@@ -1,0 +1,5 @@
+package testeventhandler
+
+t1 singleError(a: string) {
+    <div/>
+}

@@ -1,0 +1,12 @@
+-- in --
+package main
+
+t1 x() {
+    <div>{firstName...} {lastName...}</div>
+}
+-- out --
+package main
+
+t1 x() {
+	<div>{ firstName... } { lastName... }</div>
+}

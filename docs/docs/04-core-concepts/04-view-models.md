@@ -1,8 +1,8 @@
 # View models
 
-With templ, you can pass any Go type into your template as parameters, and you can call arbitrary functions.
+With tndr, you can pass any Go type into your template as parameters, and you can call arbitrary functions.
 
-However, if the parameters of your template don't closely map to what you're displaying to users, you may find yourself calling a lot of functions within your t1 files to reshape or adjust data, or to carry out complex repeated string interpolation or URL constructions.
+However, if the parameters of your template don't closely map to what you're displaying to users, you may find yourself calling a lot of functions within your tndr files to reshape or adjust data, or to carry out complex repeated string interpolation or URL constructions.
 
 This can make template rendering hard to test, because you need to set up complex data structures in the right way in order to render the HTML. If the template calls APIs or accesses databases from within the templates, it's even harder to test, because then testing your templates becomes an integration test.
 

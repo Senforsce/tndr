@@ -1,0 +1,9 @@
+package testmethod
+
+type Data struct {
+	message string
+}
+
+t1 (d Data) Method() {
+	<div>{ d.message }</div>
+}

@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Use a template that doesn't take parameters.
-	http.Handle("/", t1.Handler(home()))
+	http.Handle("/", tndr.Handler(home()))
 
 	// Use a template that accesses data or handles form posts.
 	http.Handle("/posts", NewPostsHandler())
@@ -25,7 +25,7 @@ func main() {
 func NewPostsHandler() PostsHandler {
 	// Replace this in-memory function with a call to a database.
 	postsGetter := func() (posts []Post, err error) {
-		return []Post{{Name: "templ", Author: "author"}}, nil
+		return []Post{{Name: "tndr", Author: "author"}}, nil
 	}
 	return PostsHandler{
 		GetPosts: postsGetter,
@@ -45,7 +45,7 @@ func (ph PostsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to retrieve posts", http.StatusInternalServerError)
 		return
 	}
-	t1.Handler(posts(ps)).ServeHTTP(w, r)
+	tndr.Handler(posts(ps)).ServeHTTP(w, r)
 }
 
 type Post struct {

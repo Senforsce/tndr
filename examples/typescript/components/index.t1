@@ -1,0 +1,20 @@
+package components
+
+type Data struct {
+	Message string `json:"msg"`
+}
+
+t1 Page(attributeData Data, scriptData Data) {
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<title>Script usage</title>
+			<script src="/assets/js/index.js" defer></script>
+		</head>
+		<body>
+			<button id="attributeAlerter" alert-data={ templ.JSONString(attributeData) }>Show alert from data in alert-data attribute</button>
+			@templ.JSONScript("scriptData", scriptData)
+			<button id="scriptAlerter">Show alert from data in script</button>
+		</body>
+	</html>
+}

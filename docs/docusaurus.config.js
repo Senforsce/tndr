@@ -6,12 +6,12 @@ const darkCodeTheme = require('prism-react-renderer').themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 't1 docs',
+  title: 'tndr docs',
   tagline: 'A language for writing HTML user interfaces in Go. ',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://senforsce.com/t1/guide',
+  url: 'https://tndr.guide',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -19,7 +19,7 @@ const config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'a-h', // Usually your GitHub org/user name.
-  projectName: 'templ', // Usually your repo name.
+  projectName: 'tndr', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -65,7 +65,7 @@ const config = {
       image: 'img/social-card.jpg',
       navbar: {
         logo: {
-          alt: 'Templ Logo',
+          alt: 'Tndr Logo',
           src: 'img/logo.svg',
         },
         items: [
@@ -89,11 +89,12 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['nix', 'bash', 'json'],
       },
       algolia: {
         appId: 'PVCVW9GL1Z',
         apiKey: '0823e4b4272c719b5338ed75843f38ef',
-        indexName: 'templ',
+        indexName: 'tndr',
       },
     }),
 };

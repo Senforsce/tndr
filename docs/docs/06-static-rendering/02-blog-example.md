@@ -1,12 +1,12 @@
 # Blog example
 
-This example demonstrates building a static blog with t1.
+This example demonstrates building a static blog with tndr.
 
 ## Create a blog template
 
 Create a template for the site header and site content. Then, create a template for the content page and index page.
 
-```t1 title="blog.t1"
+```tndr title="blog.t1"
 package main
 
 import "path"
@@ -16,7 +16,7 @@ t1 headerComponent(title string) {
 	<head><title>{ title }</title></head>
 }
 
-t1 contentComponent(title string, body t1.Component) {
+t1 contentComponent(title string, body tndr.Component) {
 	<body>
 		<h1>{ title }</h1>
 		<div class="content">
@@ -25,7 +25,7 @@ t1 contentComponent(title string, body t1.Component) {
 	</body>
 }
 
-t1 contentPage(title string, body t1.Component) {
+t1 contentPage(title string, body tndr.Component) {
 	<html>
 		@headerComponent(title)
 		@contentComponent(title, body)
@@ -38,7 +38,7 @@ t1 indexPage(posts []Post) {
 		<body>
 			<h1>My Blog</h1>
 			for _, post := range posts {
-				<div><a href={ t1.SafeURL(path.Join(post.Date.Format("2006/01/02"), slug.Make(post.Title), "/")) }>{ post.Title }</a></div>
+				<div><a href={ templ.SafeURL(path.Join(post.Date.Format("2006/01/02"), slug.Make(post.Title), "/")) }>{ post.Title }</a></div>
 			}
 		</body>
 	</html>
@@ -93,11 +93,11 @@ Top May Day Activities in the UK:
 
 The example blog posts contain markdown, so we'll use `github.com/yuin/goldmark` to convert the markdown to HTML.
 
-We can't use a string containing HTML directly in templ, because all strings are escaped in t1. So we'll create an `Unsafe` code component to write the HTML directly to the output writer without first escaping it.
+We can't use a string containing HTML directly in templ, because all strings are escaped in templ. So we'll create an `Unsafe` code component to write the HTML directly to the output writer without first escaping it.
 
 ```go
-func Unsafe(html string) t1.Component {
-	return t1.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
+func Unsafe(html string) templ.Component {
+	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		_, err = io.WriteString(w, html)
 		return
 	})
@@ -168,7 +168,7 @@ func main() {
 		// Create an unsafe component containing raw HTML.
 		content := Unsafe(buf.String())
 
-		// Use t1 to render the template containing the raw HTML.
+		// Use tndr to render the template containing the raw HTML.
 		err = contentPage(post.Title, content).Render(context.Background(), f)
 		if err != nil {
 			log.Fatalf("failed to write output file: %v", err)
@@ -179,7 +179,7 @@ func main() {
 
 ## Results
 
-After generating Go code from the templates, and running it with `t1 generate` followed by `go run *.go`, the following files will be created.
+After generating Go code from the templates, and running it with `tndr generate` followed by `go run *.go`, the following files will be created.
 
 ```
 public/index.html
@@ -190,33 +190,54 @@ public/2023/05/01/may-day/index.html
 The `index.html` contains links to all of the posts.
 
 ```html title="index.html"
-<title>My Website</title>
-<h1>My Website</h1>
+<title>
+ My Website
+</title>
+<h1>
+ My Website
+</h1>
 <div>
-  <a href="2023/01/01/happy-new-year/"> Happy New Year! </a>
+ <a href="2023/01/01/happy-new-year/">
+  Happy New Year!
+ </a>
 </div>
 <div>
-  <a href="2023/05/01/may-day/"> May Day </a>
+ <a href="2023/05/01/may-day/">
+  May Day
+ </a>
 </div>
 ```
 
 While each content page contains the HTML generated from the markdown, and the surrounding template.
 
 ```html title="2023/05/01/may-day/index.html"
-<title>May Day</title>
-<h1>May Day</h1>
+<title>
+ May Day
+</title>
+<h1>
+ May Day
+</h1>
 <div class="content">
-  <p>
-    May Day is an ancient spring festival celebrated on the first of May in the United Kingdom, embracing the arrival of
-    warmer weather and the renewal of life.
-  </p>
-  <p>Top May Day Activities in the UK:</p>
-  <ul>
-    <li>Dancing around the Maypole, a traditional folk activity</li>
-    <li>Attending local village fetes and fairs</li>
-    <li>Watching or participating in Morris dancing performances</li>
-    <li>Enjoying the public holiday known as Early May Bank Holiday</li>
-  </ul>
+ <p>
+  May Day is an ancient spring festival celebrated on the first of May in the United Kingdom, embracing the arrival of warmer weather and the renewal of life.
+ </p>
+ <p>
+  Top May Day Activities in the UK:
+ </p>
+ <ul>
+  <li>
+   Dancing around the Maypole, a traditional folk activity
+  </li>
+  <li>
+   Attending local village fetes and fairs
+  </li>
+  <li>
+   Watching or participating in Morris dancing performances
+  </li>
+  <li>
+   Enjoying the public holiday known as Early May Bank Holiday
+  </li>
+ </ul>
 </div>
 ```
 

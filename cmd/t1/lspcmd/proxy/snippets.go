@@ -1,6 +1,6 @@
 package proxy
 
-import lsp "github.com/a-h/protocol"
+import lsp "github.com/senforsce/tndr/lsp/protocol"
 
 var htmlSnippets = []lsp.CompletionItem{
 	{
@@ -101,7 +101,7 @@ var htmlSnippets = []lsp.CompletionItem{
 
 var snippet = []lsp.CompletionItem{
 	{
-		Label: "t1",
+		Label: "tndr",
 		InsertText: `t1 ${2:TemplateName}() {
 	${0}
 }`,

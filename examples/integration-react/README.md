@@ -3,7 +3,7 @@
 ### build-templ
 
 ```
-t1 generate
+templ generate
 ```
 
 ### build-js
@@ -18,4 +18,14 @@ esbuild --bundle index.ts --outdir=../static --minify --global-name=bundle
 
 ```
 go run .
+```
+
+### all
+
+Requires: build-templ
+Requires: build-js
+Requires: run
+
+```
+echo "Running"
 ```

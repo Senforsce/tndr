@@ -1,0 +1,16 @@
+-- in --
+package p
+
+t1 f() {
+	<div>
+	@Other(p.Test, "s")
+	</div>
+}
+-- out --
+package p
+
+t1 f() {
+	<div>
+		@Other(p.Test, "s")
+	</div>
+}

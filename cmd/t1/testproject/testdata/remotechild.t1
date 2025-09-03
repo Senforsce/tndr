@@ -1,0 +1,5 @@
+package main
+
+t1 Remote() {
+	<p>This is remote content</p>
+}

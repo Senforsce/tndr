@@ -1,0 +1,40 @@
+package testtextwhitespace
+
+t1 WhitespaceIsAddedWithinTemplStatements() {
+	<p>
+		This is some text.
+		if true {
+			So is this.
+		}
+	</p>
+}
+
+const WhitespaceIsAddedWithinTemplStatementsExpected = `<p>This is some text. So is this.</p>`
+
+t1 InlineElementsAreNotPadded() {
+	<p>Inline text <b>is spaced properly</b> without adding extra spaces.</p>
+}
+
+const InlineElementsAreNotPaddedExpected = `<p>Inline text <b>is spaced properly</b> without adding extra spaces.</p>`
+
+t1 WhiteSpaceInHTMLIsNormalised() {
+	<p>
+		newlines and other whitespace are stripped
+		but it is normalised
+		like HTML.
+	</p>
+}
+
+const WhiteSpaceInHTMLIsNormalisedExpected = `<p>newlines and other whitespace are stripped but it is normalised like HTML.</p>`
+
+t1 WhiteSpaceAroundValues() {
+	<p>t1 allows { "strings" } to be included in sentences.</p>
+}
+
+const WhiteSpaceAroundValuesExpected = `<p>t1 allows strings to be included in sentences.</p>`
+
+const WhiteSpaceAroundTemplatedValuesExpected = `<div>t1 allows whitespace around templated values.</div>`
+
+t1 WhiteSpaceAroundTemplatedValues(prefix, statement string) {
+	<div>{ prefix } { statement }</div>
+}

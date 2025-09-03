@@ -6,7 +6,7 @@ t1 Page(count int) {
 	<!DOCTYPE html>
 	<html>
 		<head>
-			<title>T1 test page</title>
+			<title>tndr test page</title>
 		</head>
 		<body>
 			<h1>Count</h1>

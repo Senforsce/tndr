@@ -1,0 +1,12 @@
+-- in --
+package test
+
+t1 input(value, validation string) {
+	<div><div><b>Text</b></div></div>
+}
+-- out --
+package test
+
+t1 input(value, validation string) {
+	<div><div><b>Text</b></div></div>
+}

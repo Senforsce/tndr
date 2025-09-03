@@ -1,0 +1,4 @@
+package testcancelledcontext
+
+t1 EmptyComponent() {
+}

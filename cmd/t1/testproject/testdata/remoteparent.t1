@@ -1,0 +1,9 @@
+package main
+
+t1 RemoteInclusionTest() {
+	@Remote
+}
+
+t1 Remote2() {
+	@Remote
+}

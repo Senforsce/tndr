@@ -1,0 +1,16 @@
+-- in --
+package p
+
+t1 f() {
+	@Other(p.Test, "s"){
+	<p>hello</p>
+	}
+}
+-- out --
+package p
+
+t1 f() {
+	@Other(p.Test, "s") {
+		<p>hello</p>
+	}
+}

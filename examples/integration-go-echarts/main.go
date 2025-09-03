@@ -8,11 +8,12 @@ import (
 
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	tndr "github.com/senforsce/tndr"
 )
 
 func generateBarItems() []opts.BarData {
 	items := make([]opts.BarData, 0)
-	for i := 0; i < 7; i++ {
+	for range 7 {
 		items = append(items, opts.BarData{Value: rand.Intn(300)})
 	}
 	return items
@@ -37,8 +38,8 @@ type Renderable interface {
 }
 
 // So lets adapt it.
-func ConvertChartToTemplComponent(chart Renderable) t1.Component {
-	return t1.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+func ConvertChartToTemplComponent(chart Renderable) tndr.Component {
+	return tndr.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		return chart.Render(w)
 	})
 }
@@ -46,7 +47,7 @@ func ConvertChartToTemplComponent(chart Renderable) t1.Component {
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		chart := createBarChart()
-		h := t1.Handler(Home(chart))
+		h := tndr.Handler(Home(chart))
 		h.ServeHTTP(w, r)
 	})
 	http.ListenAndServe("localhost:3000", nil)
