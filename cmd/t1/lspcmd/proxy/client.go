@@ -94,7 +94,7 @@ func (p Client) PublishDiagnostics(ctx context.Context, params *lsp.PublishDiagn
 		params.Diagnostics[i] = item
 		p.Log.Info(fmt.Sprintf("diagnostic [%d] rewritten", i), slog.Any("diagnostic", item))
 	}
-	params.Diagnostics = p.DiagnosticCache.AddTemplDiagnostics(uri, params.Diagnostics)
+	params.Diagnostics = p.DiagnosticCache.AddTndrDiagnostics(uri, params.Diagnostics)
 	err = p.Target.PublishDiagnostics(ctx, params)
 	return err
 }

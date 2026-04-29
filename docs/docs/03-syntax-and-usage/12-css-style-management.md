@@ -39,11 +39,11 @@ The style attribute supports use of the following types:
 * `string` - A string containing CSS properties, e.g. `background-color: red`.
 * `tndr.SafeCSS` - A value containing CSS properties and values that will not be sanitized, e.g. `background-color: red; text-decoration: underline`
 * `map[string]string` - A map of string keys to string values, e.g. `map[string]string{"color": "red"}`
-* `map[string]templ.SafeCSSProperty` - A map of string keys to values, where the values will not be sanitized.
+* `map[string]tndr.SafeCSSProperty` - A map of string keys to values, where the values will not be sanitized.
 * `tndr.KeyValue[string, string]` - A single CSS key/value.
-* `tndr.KeyValue[string, templ.SafeCSSProperty` - A CSS key/value, but the value will not be sanitized.
+* `tndr.KeyValue[string, tndr.SafeCSSProperty` - A CSS key/value, but the value will not be sanitized.
 * `tndr.KeyValue[string, bool]` - A map where the CSS in the key is only included in the output if the boolean value is true.
-* `tndr.KeyValue[templ.SafeCSS, bool]` - A map where the CSS in the key is only included if the boolean value is true.
+* `tndr.KeyValue[tndr.SafeCSS, bool]` - A map where the CSS in the key is only included if the boolean value is true.
 
 Finally, a function value that returns any of the above types can be used.
 
@@ -109,8 +109,8 @@ t1 TextInput(value string, hasError bool) {
         type="text"
         value={ value }
         style={
-            templ.KV("border-color: #ff3860", hasError),
-            templ.KV("background-color: #fff5f7", hasError),
+            tndr.KV("border-color: #ff3860", hasError),
+            tndr.KV("background-color: #fff5f7", hasError),
             "padding: 0.5em 1em;",
         }
     >
@@ -131,8 +131,8 @@ By default, dynamic CSS values are sanitized to protect against dangerous CSS va
 However, if you're sure, you can bypass sanitization by marking your content as safe with the `tndr.SafeCSS` and `tndr.SafeCSSProperty` types.
 
 ```tndr
-func calculatePositionStyles(x, y int) templ.SafeCSS {
-    return templ.SafeCSS(fmt.Sprintf(
+func calculatePositionStyles(x, y int) tndr.SafeCSS {
+    return tndr.SafeCSS(fmt.Sprintf(
         "transform: translate(%dpx, %dpx);",
         x*2,  // Example calculation
         y*2,
@@ -174,7 +174,7 @@ t1 UnsafeExample() {
 ```
 
 ```html title="Output"
-<div style="background-image:zTemplUnsafeCSSPropertyValue;">
+<div style="background-image:zTndrUnsafeCSSPropertyValue;">
     Dangerous content
 </div>
 ```
@@ -183,7 +183,7 @@ These protections can be bypassed with the `tndr.SafeCSS` and `tndr.SafeCSSPrope
 
 ```tndr
 t1 SafeEmbed() {
-    <div style={ templ.SafeCSS("background-image: url(/safe.png);") }>
+    <div style={ tndr.SafeCSS("background-image: url(/safe.png);") }>
         Trusted content
     </div>
 }
@@ -215,20 +215,20 @@ t1 InvalidButton() {
 ```
 
 ```html title="Output"
-<button style="zTemplUnsafeCSSPropertyName:zTemplUnsafeCSSPropertyValue;color:zTemplUnsafeCSSPropertyValue;">
+<button style="zTndrUnsafeCSSPropertyName:zTndrUnsafeCSSPropertyValue;color:zTndrUnsafeCSSPropertyValue;">
     Click me
 </button>
 ```
 
 Go's type system doesn't support union types, so it's not possible to limit the inputs to the style attribute to just the supported types.
 
-As such, the attribute takes `any`, and executes type checks at runtime. Any invalid types will produce the CSS value `zTemplUnsupportedStyleAttributeValue:Invalid;`.
+As such, the attribute takes `any`, and executes type checks at runtime. Any invalid types will produce the CSS value `zTndrUnsupportedStyleAttributeValue:Invalid;`.
 
 ## Class attributes
 
 To use a variable as the name of a CSS class, use a CSS expression.
 
-```tndr title="component.templ"
+```tndr title="component.t1"
 package main
 
 t1 button(text string, className string) {
@@ -238,7 +238,7 @@ t1 button(text string, className string) {
 
 The class expression can take an array of values.
 
-```tndr title="component.templ"
+```tndr title="component.t1"
 package main
 
 t1 button(text string, className string) {
@@ -258,7 +258,7 @@ Toggle addition of CSS classes to an element based on a boolean value by passing
   * `map[string]bool`
   * `map[CSSClass]bool`
 
-```tndr title="component.templ"
+```tndr title="component.t1"
 package main
 
 css red() {
@@ -266,7 +266,7 @@ css red() {
 }
 
 t1 button(text string, isPrimary bool) {
-	<button class={ "button", templ.KV("is-primary", isPrimary), templ.KV(red(), isPrimary) }>{ text }</button>
+	<button class={ "button", tndr.KV("is-primary", isPrimary), tndr.KV(red(), isPrimary) }>{ text }</button>
 }
 ```
 
@@ -291,7 +291,7 @@ func main() {
 
 ## CSS elements
 
-The standard `<style>` element can be used within a template.
+The standard `<style>` element can be used within a Tndrate.
 
 `<style>` element contents are rendered to the output without any changes.
 
@@ -328,7 +328,7 @@ t1 page() {
 ```
 
 :::tip
-If you want to make sure that the CSS element is only output once, even if you use a template many times, use a CSS expression.
+If you want to make sure that the CSS element is only output once, even if you use a Tndrate many times, use a CSS expression.
 :::
 
 ## CSS components
@@ -341,7 +341,7 @@ To include CSS within a component library, use a CSS component.
 
 CSS components can also be conditionally rendered.
 
-```tndr title="component.templ"
+```tndr title="component.t1"
 package main
 
 var red = "#ff0000"
@@ -358,7 +358,7 @@ css className() {
 }
 
 t1 button(text string, isPrimary bool) {
-	<button class={ "button", className(), templ.KV(primaryClassName(), isPrimary) }>{ text }</button>
+	<button class={ "button", className(), tndr.KV(primaryClassName(), isPrimary) }>{ text }</button>
 }
 ```
 
@@ -383,7 +383,7 @@ The class name is autogenerated, don't rely on it being consistent.
 
 CSS components can also require function arguments.
 
-```tndr title="component.templ"
+```tndr title="component.t1"
 package main
 
 css loading(percent int) {
@@ -411,7 +411,7 @@ t1 index() {
 
 To prevent CSS injection attacks, tndr automatically sanitizes dynamic CSS property names and values using the `tndr.SanitizeCSS` function. Internally, this uses a lightweight fork of Google's `safehtml` package to sanitize the value.
 
-If a property name or value has been sanitized, it will be replaced with `zTemplUnsafeCSSPropertyName` for property names, or `zTemplUnsafeCSSPropertyValue` for property values.
+If a property name or value has been sanitized, it will be replaced with `zTndrUnsafeCSSPropertyName` for property names, or `zTndrUnsafeCSSPropertyValue` for property values.
 
 To bypass this sanitization, e.g. for URL values of `background-image`, you can mark the value as safe using the `tndr.SafeCSSProperty` type.
 
@@ -427,9 +427,9 @@ t1 Rotate(degrees float64) {
 
 ### CSS Middleware
 
-The use of CSS templates means that `<style>` elements containing the CSS are rendered on each HTTP request.
+The use of CSS Tndrates means that `<style>` elements containing the CSS are rendered on each HTTP request.
 
-To save bandwidth, tndr can provide a global stylesheet that includes the output of CSS templates instead of including `<style>` tags in each HTTP request.
+To save bandwidth, tndr can provide a global stylesheet that includes the output of CSS Tndrates instead of including `<style>` tags in each HTTP request.
 
 To provide a global stylesheet, use tndr's CSS middleware, and register tndr classes on application startup.
 

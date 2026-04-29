@@ -6,13 +6,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log/slog"
 	"regexp"
 	"runtime"
 
 	_ "net/http/pprof"
 
-	"github.com/senforsce/tndr/cmd/t1/sloghandler"
+	"github.com/senforsce/telemetry"
 )
 
 const generateUsageText = `usage: t1 generate [<args>...]
@@ -36,7 +35,7 @@ Args:
   -watch
     Set to true to watch the path for changes and regenerate code.
   -watch-pattern <regexp>
-    Set the regexp pattern of files that will be watched for changes. (default: '(.+\.go$)|(.+\.t1$)|(.+_templ\.txt$)')
+    Set the regexp pattern of files that will be watched for changes. (default: '(.+\.go$)|(.+\.t1$)|(.+_t1\.txt$)')
   -cmd <cmd>
     Set the command to run after generating code.
   -proxy
@@ -79,7 +78,7 @@ Examples:
 
 const defaultWatchPattern = `(.+\.go$)|(.+\.t1$)`
 
-func NewArguments(stdout, stderr io.Writer, args []string) (cmdArgs Arguments, log *slog.Logger, help bool, err error) {
+func NewArguments(stdout, stderr io.Writer, args []string) (cmdArgs Arguments, help bool, err error) {
 	cmd := flag.NewFlagSet("generate", flag.ContinueOnError)
 	cmd.StringVar(&cmdArgs.FileName, "f", "", "")
 	cmd.StringVar(&cmdArgs.Path, "path", ".", "")
@@ -99,33 +98,31 @@ func NewArguments(stdout, stderr io.Writer, args []string) (cmdArgs Arguments, l
 	cmd.IntVar(&cmdArgs.PPROFPort, "pprof", 0, "")
 	cmd.BoolVar(&cmdArgs.KeepOrphanedFiles, "keep-orphaned-files", false, "")
 	cmd.BoolVar(&cmdArgs.Lazy, "lazy", false, "")
-	verboseFlag := cmd.Bool("v", false, "")
-	logLevelFlag := cmd.String("log-level", "info", "")
+	//verboseFlag := cmd.Bool("v", false, "")
+	//logLevelFlag := cmd.String("log-level", "info", "")
 	helpFlag := cmd.Bool("help", false, "")
 	if err = cmd.Parse(args); err != nil {
-		return Arguments{}, nil, false, fmt.Errorf("failed to parse arguments: %w", err)
+		return Arguments{}, false, fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
-	log = sloghandler.NewLogger(*logLevelFlag, *verboseFlag, stderr)
-
 	if cmdArgs.Watch && cmdArgs.FileName != "" {
-		return Arguments{}, log, *helpFlag, fmt.Errorf("cannot watch a single file, remove the -f or -watch flag")
+		return Arguments{}, *helpFlag, fmt.Errorf("cannot watch a single file, remove the -f or -watch flag")
 	}
 	cmdArgs.WatchPattern, err = regexp.Compile(*watchPatternFlag)
 	if err != nil {
-		return cmdArgs, log, *helpFlag, fmt.Errorf("invalid watch pattern %q: %w", *watchPatternFlag, err)
+		return cmdArgs, *helpFlag, fmt.Errorf("invalid watch pattern %q: %w", *watchPatternFlag, err)
 	}
 
 	// Default to writing to files unless the stdout flag is set.
 	cmdArgs.FileWriter = FileWriter
 	if *toStdoutFlag {
 		if cmdArgs.FileName == "" {
-			return Arguments{}, log, *helpFlag, fmt.Errorf("only a single file can be output to stdout, add the -f flag to specify the file to generate code for")
+			return Arguments{}, *helpFlag, fmt.Errorf("only a single file can be output to stdout, add the -f flag to specify the file to generate code for")
 		}
 		cmdArgs.FileWriter = WriterFileWriter(stdout)
 	}
 
-	return cmdArgs, log, *helpFlag, nil
+	return cmdArgs, *helpFlag, nil
 }
 
 type Arguments struct {
@@ -163,7 +160,18 @@ func (a *ArgumentError) Code() int {
 }
 
 func Run(ctx context.Context, stdout, stderr io.Writer, args []string) (err error) {
-	cmdArgs, log, help, err := NewArguments(stdout, stderr, args)
+	logOptions := telemetry.SenforsceLoggerOptions{
+		Context:        ctx,
+		LogLevel:       "debug",
+		LoggerName:     "tndr",
+		ServiceName:    "main",
+		ServiceVersion: "0.1.0",
+		Verbose:        true,
+	}
+	tndrLogger, tndrLoggerProvider := telemetry.NewLogger(logOptions)
+
+	defer tndrLoggerProvider.Shutdown(ctx)
+	cmdArgs, help, err := NewArguments(stdout, stderr, args)
 	if err != nil {
 		_, _ = fmt.Fprint(stderr, generateUsageText)
 		return &ArgumentError{
@@ -174,7 +182,7 @@ func Run(ctx context.Context, stdout, stderr io.Writer, args []string) (err erro
 		_, _ = fmt.Fprint(stdout, generateUsageText)
 		return nil
 	}
-	g, err := NewGenerate(log, cmdArgs)
+	g, err := NewGenerate(tndrLogger, cmdArgs)
 	if err != nil {
 		return err
 	}

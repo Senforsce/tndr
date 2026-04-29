@@ -16,13 +16,13 @@ See https://content-security-policy.com/nonce/ for more information.
 
 ## Setting a nonce
 
-The `templ.WithNonce` function can be used to set a nonce for templ to use when rendering scripts.
+The `tndr.WithNonce` function can be used to set a nonce for templ to use when rendering scripts.
 
 It returns an updated `context.Context` with the nonce set.
 
-In this example, the `alert` function is rendered as a script element by templ.
+In this example, the `alert` function is rendered as a script element by tndr.
 
-```templ title="templates.templ"
+```templ title="templates.t1"
 package main
 
 import "context"
@@ -52,7 +52,7 @@ func withNonce(next http.Handler) http.Handler {
 		nonce := securelyGenerateRandomString()
 		w.Header().Add("Content-Security-Policy", fmt.Sprintf("script-src 'nonce-%s'", nonce))
 		// Use the context to pass the nonce to the handler.
-		ctx := templ.WithNonce(r.Context(), nonce)
+		ctx := tndr.WithNonce(r.Context(), nonce)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -61,7 +61,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Handle template.
-	mux.HandleFunc("/", templ.Handler(template()))
+	mux.HandleFunc("/", tndr.Handler(template()))
 
 	// Apply middleware.
 	withNonceMux := withNonce(mux)

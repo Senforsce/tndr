@@ -47,14 +47,14 @@ func TestGoDocHeaderParserParse(t *testing.T) {
 		},
 		{
 			name:     "returns header with imports",
-			filename: "/a.templ",
+			filename: "/a.t1",
 			parser: goDocHeaderParser{
 				openDocSources: map[string]string{
-					"/a.templ": "package a\n\nimport (\n\t\"strings\"\n\t\"fmt\"\n)\n\nfunc main() {\n}\n",
+					"/a.t1": "package a\n\nimport (\n\t\"strings\"\n\t\"fmt\"\n)\n\nfunc main() {\n}\n",
 				},
 				fileParser: mockFileParser{
 					source: map[string]string{
-						"/a.templ": "package a\n\nimport (\n\t\"strings\"\n\t\"fmt\"\n)\n\nfunc main() {\n}\n",
+						"/a.t1": "package a\n\nimport (\n\t\"strings\"\n\t\"fmt\"\n)\n\nfunc main() {\n}\n",
 					},
 				},
 			},

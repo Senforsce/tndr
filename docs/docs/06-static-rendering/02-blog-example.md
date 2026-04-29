@@ -38,7 +38,7 @@ t1 indexPage(posts []Post) {
 		<body>
 			<h1>My Blog</h1>
 			for _, post := range posts {
-				<div><a href={ templ.SafeURL(path.Join(post.Date.Format("2006/01/02"), slug.Make(post.Title), "/")) }>{ post.Title }</a></div>
+				<div><a href={ tndr.SafeURL(path.Join(post.Date.Format("2006/01/02"), slug.Make(post.Title), "/")) }>{ post.Title }</a></div>
 			}
 		</body>
 	</html>
@@ -93,11 +93,11 @@ Top May Day Activities in the UK:
 
 The example blog posts contain markdown, so we'll use `github.com/yuin/goldmark` to convert the markdown to HTML.
 
-We can't use a string containing HTML directly in templ, because all strings are escaped in templ. So we'll create an `Unsafe` code component to write the HTML directly to the output writer without first escaping it.
+We can't use a string containing HTML directly in templ, because all strings are escaped in tndr. So we'll create an `Unsafe` code component to write the HTML directly to the output writer without first escaping it.
 
 ```go
-func Unsafe(html string) templ.Component {
-	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
+func Unsafe(html string) tndr.Component {
+	return tndr.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		_, err = io.WriteString(w, html)
 		return
 	})

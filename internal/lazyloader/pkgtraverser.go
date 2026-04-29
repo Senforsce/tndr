@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	_templExt = ".templ"
+	_tndrExt = ".t1"
 )
 
 type pkgTraverser interface {
@@ -21,12 +21,12 @@ type pkgTraverser interface {
 }
 
 type goPkgTraverser struct {
-	templDocHandler TemplDocHandler
-	pkgsRefCount    map[string]int
-	fileReader      fileReader
+	tndrDocHandler TndrDocHandler
+	pkgsRefCount   map[string]int
+	fileReader     fileReader
 }
 
-type TemplDocHandler interface {
+type TndrDocHandler interface {
 	HandleDidOpen(ctx context.Context, params *lsp.DidOpenTextDocumentParams) error
 	HandleDidClose(ctx context.Context, params *lsp.DidCloseTextDocumentParams) error
 }
@@ -35,9 +35,9 @@ type fileReader interface {
 	read(file string) ([]byte, error)
 }
 
-type templFileReader struct{}
+type tndrFileReader struct{}
 
-func (templFileReader) read(file string) ([]byte, error) {
+func (tndrFileReader) read(file string) ([]byte, error) {
 	return os.ReadFile(file)
 }
 
@@ -54,7 +54,7 @@ func (t *goPkgTraverser) openTopologically(ctx context.Context, pkg *packages.Pa
 	}
 
 	for _, otherFile := range pkg.OtherFiles {
-		if filepath.Ext(otherFile) != _templExt {
+		if filepath.Ext(otherFile) != _tndrExt {
 			continue
 		}
 
@@ -63,7 +63,7 @@ func (t *goPkgTraverser) openTopologically(ctx context.Context, pkg *packages.Pa
 			return fmt.Errorf("read file %q: %w", otherFile, err)
 		}
 
-		if err := t.templDocHandler.HandleDidOpen(ctx, &lsp.DidOpenTextDocumentParams{
+		if err := t.tndrDocHandler.HandleDidOpen(ctx, &lsp.DidOpenTextDocumentParams{
 			TextDocument: lsp.TextDocumentItem{
 				URI:        uri.File(otherFile),
 				Text:       string(text),
@@ -86,11 +86,11 @@ func (t *goPkgTraverser) closeTopologically(ctx context.Context, pkg *packages.P
 	}
 
 	for _, otherFile := range pkg.OtherFiles {
-		if filepath.Ext(otherFile) != _templExt {
+		if filepath.Ext(otherFile) != _tndrExt {
 			continue
 		}
 
-		if err := t.templDocHandler.HandleDidClose(ctx, &lsp.DidCloseTextDocumentParams{
+		if err := t.tndrDocHandler.HandleDidClose(ctx, &lsp.DidCloseTextDocumentParams{
 			TextDocument: lsp.TextDocumentIdentifier{
 				URI: uri.File(otherFile),
 			},

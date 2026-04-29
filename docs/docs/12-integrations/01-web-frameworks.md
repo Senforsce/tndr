@@ -58,7 +58,7 @@ func mustGenerateCSRFKey() (key []byte) {
 
 func main() {
   r := http.NewServeMux()
-  r.Handle("/", templ.Handler(Form()))
+  r.Handle("/", tndr.Handler(Form()))
 
   csrfMiddleware := csrf.Protect(mustGenerateCSRFKey(), csrf.TrustedOrigins([]string{"localhost:8000"}))
   withCSRFProtection := csrfMiddleware(r)
@@ -70,7 +70,7 @@ func main() {
 
 Creating a `CSRF` templ component makes it easy to include the CSRF token in your forms.
 
-```templ title="form.templ"
+```templ title="form.t1"
 templ Form() {
   <h1>CSRF Example</h1>
   <form method="post" action="/">

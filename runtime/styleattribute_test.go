@@ -97,12 +97,12 @@ func TestSanitizeStyleAttribute(t *testing.T) {
 		{
 			name:     "map[string]string: empty names are invalid",
 			input:    []any{map[string]string{"": "red", "background-color": "blue"}},
-			expected: "zTemplUnsafeCSSPropertyName:zTemplUnsafeCSSPropertyValue;background-color:blue;",
+			expected: "zTndrUnsafeCSSPropertyName:zTndrUnsafeCSSPropertyValue;background-color:blue;",
 		},
 		{
 			name:     "map[string]string: keys and values are sanitized",
 			input:    []any{map[string]string{"color": "</style>", "background-color": "blue"}},
-			expected: "background-color:blue;color:zTemplUnsafeCSSPropertyValue;",
+			expected: "background-color:blue;color:zTndrUnsafeCSSPropertyValue;",
 		},
 
 		// map[string]tndr.SafeCSSProperty
@@ -119,12 +119,12 @@ func TestSanitizeStyleAttribute(t *testing.T) {
 		{
 			name:     "map[string]tndr.SafeCSSProperty: empty names are invalid",
 			input:    []any{map[string]tndr.SafeCSSProperty{"": "red", "background-color": "blue"}},
-			expected: "zTemplUnsafeCSSPropertyName:red;background-color:blue;",
+			expected: "zTndrUnsafeCSSPropertyName:red;background-color:blue;",
 		},
 		{
 			name:     "map[string]tndr.SafeCSSProperty: keys are sanitized, but not values",
 			input:    []any{map[string]tndr.SafeCSSProperty{"color": "</style>", "</style>": "blue"}},
-			expected: "zTemplUnsafeCSSPropertyName:blue;color:&lt;/style&gt;;",
+			expected: "zTndrUnsafeCSSPropertyName:blue;color:&lt;/style&gt;;",
 		},
 
 		// tndr.KeyValue[string, string]
@@ -136,12 +136,12 @@ func TestSanitizeStyleAttribute(t *testing.T) {
 		{
 			name:     "KeyValue[string, string]: keys and values are sanitized",
 			input:    []any{tndr.KV("color", "</style>"), tndr.KV("</style>", "blue")},
-			expected: "color:zTemplUnsafeCSSPropertyValue;zTemplUnsafeCSSPropertyName:zTemplUnsafeCSSPropertyValue;",
+			expected: "color:zTndrUnsafeCSSPropertyValue;zTndrUnsafeCSSPropertyName:zTndrUnsafeCSSPropertyValue;",
 		},
 		{
 			name:     "KeyValue[string, string]: empty names are invalid",
 			input:    []any{tndr.KV("", "red"), tndr.KV("background-color", "blue")},
-			expected: "zTemplUnsafeCSSPropertyName:zTemplUnsafeCSSPropertyValue;background-color:blue;",
+			expected: "zTndrUnsafeCSSPropertyName:zTndrUnsafeCSSPropertyValue;background-color:blue;",
 		},
 
 		// tndr.KeyValue[string, tndr.SafeCSSProperty]
@@ -153,12 +153,12 @@ func TestSanitizeStyleAttribute(t *testing.T) {
 		{
 			name:     "KeyValue[string, tndr.SafeCSSProperty]: keys are sanitized, but not values",
 			input:    []any{tndr.KV("color", "</style>"), tndr.KV("</style>", "blue")},
-			expected: "color:zTemplUnsafeCSSPropertyValue;zTemplUnsafeCSSPropertyName:zTemplUnsafeCSSPropertyValue;",
+			expected: "color:zTndrUnsafeCSSPropertyValue;zTndrUnsafeCSSPropertyName:zTndrUnsafeCSSPropertyValue;",
 		},
 		{
 			name:     "KeyValue[string, tndr.SafeCSSProperty]: empty names are invalid",
 			input:    []any{tndr.KV("", "red"), tndr.KV("background-color", "blue")},
-			expected: "zTemplUnsafeCSSPropertyName:zTemplUnsafeCSSPropertyValue;background-color:blue;",
+			expected: "zTndrUnsafeCSSPropertyName:zTndrUnsafeCSSPropertyValue;background-color:blue;",
 		},
 
 		// tndr.KeyValue[string, bool]
@@ -222,14 +222,14 @@ func TestSanitizeStyleAttribute(t *testing.T) {
 			input: []any{
 				func() (string, string) { return "color:blue", "color:blue" },
 			},
-			expected: TemplUnsupportedStyleAttributeValue,
+			expected: TndrUnsupportedStyleAttributeValue,
 		},
 		{
 			name: "func: only one or two return values are allowed",
 			input: []any{
 				func() (string, string, string) { return "color:blue", "color:blue", "color:blue" },
 			},
-			expected: TemplUnsupportedStyleAttributeValue,
+			expected: TndrUnsupportedStyleAttributeValue,
 		},
 
 		// Slices.
@@ -269,7 +269,7 @@ func TestSanitizeStyleAttribute(t *testing.T) {
 		{
 			name:     "edge: unsupported type",
 			input:    []any{42},
-			expected: TemplUnsupportedStyleAttributeValue,
+			expected: TndrUnsupportedStyleAttributeValue,
 		},
 		{
 			name:     "edge: nil input",

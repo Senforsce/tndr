@@ -11,7 +11,7 @@ import (
 	"github.com/senforsce/tndr/internal/htmlfind"
 )
 
-const DefaultCommand = "prettier --use-tabs --stdin-filepath $TEMPL_PRETTIER_FILENAME"
+const DefaultCommand = "prettier --use-tabs --stdin-filepath $TNDR_PRETTIER_FILENAME"
 
 func IsAvailable(command string) bool {
 	executable := strings.Fields(command)[0]
@@ -20,19 +20,19 @@ func IsAvailable(command string) bool {
 }
 
 // Run the prettier command with the given input and file name.
-// $TEMPL_PRETTIER_FILENAME is set to the file name being formatted.
+// $TNDR_PRETTIER_FILENAME is set to the file name being formatted.
 // To format blocks inside t1 files a fake name is provided, e.g. format.html, format.js, format.css etc.
 // The command is run in a shell, so it can be a complex command with pipes and redirections.
 //
 // Examples:
 //
-//	prettier --use-tabs --stdin-filepath $TEMPL_PRETTIER_FILENAME
-//	prettierd --use-tabs --stdin-filepath $TEMPL_PRETTIER_FILENAME
-//	npx prettier --use-tabs --stdin-filepath $TEMPL_PRETTIER_FILENAME
-//	prettier --config ./frontend/.prettierrc --use-tabs --stdin-filepath $TEMPL_PRETTIER_FILENAME
+//	prettier --use-tabs --stdin-filepath $TNDR_PRETTIER_FILENAME
+//	prettierd --use-tabs --stdin-filepath $TNDR_PRETTIER_FILENAME
+//	npx prettier --use-tabs --stdin-filepath $TNDR_PRETTIER_FILENAME
+//	prettier --config ./frontend/.prettierrc --use-tabs --stdin-filepath $TNDR_PRETTIER_FILENAME
 func Run(input, fileName, command string) (formatted string, err error) {
 	cmd := getCommand(runtime.GOOS, command)
-	cmd.Env = append(os.Environ(), fmt.Sprintf("TEMPL_PRETTIER_FILENAME=%s", fileName))
+	cmd.Env = append(os.Environ(), fmt.Sprintf("TNDR_PRETTIER_FILENAME=%s", fileName))
 	cmd.Stdin = strings.NewReader(input)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -58,7 +58,7 @@ func Element(name string, typeAttrValue string, content string, depth int, prett
 	// Add divs to the start and end of the script to ensure that prettier formats the content with
 	// correct indentation.
 	for i := range depth {
-		indentationWrapper.WriteString(fmt.Sprintf("<div data-templ-depth=\"%d\">", i))
+		indentationWrapper.WriteString(fmt.Sprintf("<div data-tndr-depth=\"%d\">", i))
 	}
 
 	// Write start tag with type attribute if present.
@@ -84,7 +84,7 @@ func Element(name string, typeAttrValue string, content string, depth int, prett
 	}
 
 	before := indentationWrapper.String()
-	after, err = Run(before, "templ_content.html", prettierCommand)
+	after, err = Run(before, "tndr_content.html", prettierCommand)
 	if err != nil {
 		return "", fmt.Errorf("prettier error: %w", err)
 	}

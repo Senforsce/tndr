@@ -29,9 +29,9 @@ Using a `tndr.OnceHandle` allows a component to define global client-side script
 
 Use `tndr.JSFuncCall` to pass server-side data to client-side scripts by calling a JavaScript function.
 
-```tndr title="input.templ"
+```tndr title="input.t1"
 t1 Component(data CustomType) {
-	<button onclick={ templ.JSFuncCall("alert", data.Message) }>Show alert</button>
+	<button onclick={ tndr.JSFuncCall("alert", data.Message) }>Show alert</button>
 }
 ```
 
@@ -50,14 +50,14 @@ HTML element `on*` attributes pass an event object to the function. To pass the 
 `tndr.JSExpression` bypasses JSON encoding, so the string value is output directly to the HTML - this can be a security risk if the data is not trusted, e.g. the data is user input, not a compile-time constant.
 :::
 
-```tndr title="input.templ"
+```tndr title="input.t1"
 <script>
 	function clickHandler(event, message) {
 		alert(message);
 		event.preventDefault();
 	}
 </script>
-<button onclick={ templ.JSFuncCall("clickHandler", templ.JSExpression("event"), "message from Go") }>Show event</button>
+<button onclick={ tndr.JSFuncCall("clickHandler", tndr.JSExpression("event"), "message from Go") }>Show event</button>
 ```
 
 The output would be:
@@ -78,11 +78,11 @@ Use `tndr.JSFuncCall` to call a client-side function with server-side data.
 
 `tndr.JSFuncCall` takes a function name and a variadic list of arguments. The arguments are JSON encoded and passed to the function.
 
-In the case that the function name is invalid (e.g. contains `</script>` or is a JavaScript expression, not a function name), the function name will be sanitized to `__templ_invalid_function_name`.
+In the case that the function name is invalid (e.g. contains `</script>` or is a JavaScript expression, not a function name), the function name will be sanitized to `__tndr_invalid_function_name`.
 
-```tndr title="components.templ"
+```tndr title="components.t1"
 t1 InitializeClientSideScripts(data CustomType) {
-  @templ.JSFuncCall("functionToCall", data.Name, data.Age)
+  @tndr.JSFuncCall("functionToCall", data.Name, data.Age)
 }
 ```
 
@@ -106,9 +106,9 @@ A common approach used by libraries like alpine.js is to pass data to the client
 
 To pass server-side data to the client in a HTML attribute, use `tndr.JSONString` to encode the data as a JSON string.
 
-```tndr title="input.templ"
+```tndr title="input.t1"
 t1 body(data any) {
-  <button id="alerter" alert-data={ templ.JSONString(data) }>Show alert</button>
+  <button id="alerter" alert-data={ tndr.JSONString(data) }>Show alert</button>
 }
 ```
 
@@ -127,7 +127,7 @@ const data = JSON.parse(button.getAttribute('alert-data'));
 
 ```tndr
 t1 DataDisplay(data DataType) {
-  <div x-data={ templ.JSONString(data) }>
+  <div x-data={ tndr.JSONString(data) }>
       ...
   </div>
 }
@@ -137,9 +137,9 @@ t1 DataDisplay(data DataType) {
 
 In addition to passing data in HTML attributes, you can also pass data to the client in a `<script>` element.
 
-```tndr title="input.templ"
+```tndr title="input.t1"
 t1 body(data any) {
-  @templ.JSONScript("id", data)
+  @tndr.JSONScript("id", data)
 }
 ```
 
@@ -161,7 +161,7 @@ t1 will automatically escape the Go data to prevent XSS attacks.
 
 Within strings, you can use `{{ value }}` to interpolate Go data.
 
-```tndr title="input.templ"
+```tndr title="input.t1"
 t1 body(msg string) {
   <script>
     const message = "Your message: {{ msg }}";
@@ -181,7 +181,7 @@ The output would be:
 
 Outside JavaScript strings, data is JSON encoded so that it can be used as a JavaScript object.
 
-```tndr title="input.templ"
+```tndr title="input.t1"
 t1 body(msg string) {
   <script>
     const message = {{ msg }};
@@ -211,12 +211,12 @@ This example demonstrates how to add client-side behaviour to a component using 
 
 The example uses a `tndr.OnceHandle` to define global client-side scripts that are required, without rendering the scripts multiple times in the response.
 
-```tndr title="component.templ"
+```tndr title="component.t1"
 package main
 
 import "net/http"
 
-var helloHandle = templ.NewOnceHandle()
+var helloHandle = tndr.NewOnceHandle()
 
 t1 hello(label, name string) {
   // This script is only rendered once per HTTP request.
@@ -251,7 +251,7 @@ t1 page() {
 }
 
 func main() {
-  http.Handle("/", templ.Handler(page()))
+  http.Handle("/", tndr.Handler(page()))
   http.ListenAndServe("127.0.0.1:8080", nil)
 }
 ```
@@ -260,8 +260,8 @@ func main() {
 You might find libraries like [surreal](https://github.com/gnat/surreal) useful for reducing boilerplate.
 
 ```tndr
-var helloHandle = templ.NewOnceHandle()
-var surrealHandle = templ.NewOnceHandle()
+var helloHandle = tndr.NewOnceHandle()
+var surrealHandle = tndr.NewOnceHandle()
 
 t1 hello(label, name string) {
   @helloHandle.Once() {
@@ -388,7 +388,7 @@ After running `npm build` in the `ts` directory, the TypeScript code is transpil
 
 The output file `../assets/js/index.js` can then be used in a tndr project.
 
-```tndr title="components/head.templ"
+```tndr title="components/head.t1"
 t1 head() {
 	<head>
 		<script src="/assets/js/index.js"></script>
@@ -406,7 +406,7 @@ func main() {
 
 	// Serve components.
 	data := map[string]any{"msg": "Hello, World!"}
-	h := templ.Handler(components.Page(data))
+	h := tndr.Handler(components.Page(data))
 	mux.Handle("/", h)
 
 	fmt.Println("Listening on http://localhost:8080")
@@ -544,9 +544,9 @@ After building and running the executable, running `curl http://localhost:8080/`
 ```html title="Output"
 <html>
 	<body>
-		<script>function __templ_printToConsole_5a85(content){console.log(content)}</script>
-		<script>__templ_printToConsole_5a85("2023-11-11 01:01:40.983381358 +0000 UTC")</script>
-		<script>__templ_printToConsole_5a85("Again: 2023-11-11 01:01:40.983381358 +0000 UTC")</script>
+		<script>function __tndr_printToConsole_5a85(content){console.log(content)}</script>
+		<script>__tndr_printToConsole_5a85("2023-11-11 01:01:40.983381358 +0000 UTC")</script>
+		<script>__tndr_printToConsole_5a85("Again: 2023-11-11 01:01:40.983381358 +0000 UTC")</script>
 	</body>
 </html>
 ```
@@ -558,7 +558,7 @@ A common use case is to pass the `event` or `this` objects to an event handler.
 ```tndr
 package main
 
-script showButtonWasClicked(event templ.JSExpression) {
+script showButtonWasClicked(event tndr.JSExpression) {
 	const originalButtonText = event.target.innerText
 	event.target.innerText = "I was Clicked!"
 	setTimeout(() => event.target.innerText = originalButtonText, 2000)
@@ -567,7 +567,7 @@ script showButtonWasClicked(event templ.JSExpression) {
 t1 page() {
 	<html>
 		<body>
-			<button type="button" onclick={ showButtonWasClicked(templ.JSExpression("event")) }>Click Me</button>
+			<button type="button" onclick={ showButtonWasClicked(tndr.JSExpression("event")) }>Click Me</button>
 		</body>
 	</html>
 }

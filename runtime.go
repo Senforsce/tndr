@@ -271,11 +271,42 @@ func NewCSSMiddleware(next http.Handler, classes ...CSSClass) CSSMiddleware {
 	}
 }
 
+func InjectCSS(ctx context.Context, classes []ComponentCSSClass) context.Context {
+	ctx, v := getContext(ctx)
+
+	for _, cl := range classes {
+		v.addClass(cl.ID)
+	}
+
+	return ctx
+}
+
 // CSSMiddleware renders a global stylesheet.
 type CSSMiddleware struct {
 	Path       string
 	CSSHandler CSSHandler
 	Next       http.Handler
+}
+
+func (cssm CSSMiddleware) CSSPath() string {
+	return cssm.Path
+}
+
+// Update 29/04/26 making the middleware compatible with libraries like gin !
+func (cssm CSSMiddleware) Handler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == cssm.Path {
+			cssm.CSSHandler.ServeHTTP(w, r)
+			return
+		}
+
+		ctx, v := getContext(r.Context())
+		for _, c := range cssm.CSSHandler.Classes {
+			v.addClass(c.ID)
+		}
+
+		cssm.Next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func (cssm CSSMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {

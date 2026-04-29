@@ -19,7 +19,7 @@ func NewHandler(l *slog.Logger, s *proxy.Server) http.Handler {
 	log = l
 	m.HandleFunc("/tndr", func(w http.ResponseWriter, r *http.Request) {
 		uri := r.URL.Query().Get("uri")
-		c, ok := s.TemplSource.Get(uri)
+		c, ok := s.TndrSource.Get(uri)
 		if !ok {
 			Error(w, "uri not found", http.StatusNotFound)
 			return
@@ -48,13 +48,13 @@ func NewHandler(l *slog.Logger, s *proxy.Server) http.Handler {
 		uri := r.URL.Query().Get("uri")
 		if uri == "" {
 			// List all URIs.
-			if err := list(s.TemplSource.URIs()).Render(r.Context(), w); err != nil {
+			if err := list(s.TndrSource.URIs()).Render(r.Context(), w); err != nil {
 				Error(w, "failed to list URIs", http.StatusInternalServerError)
 			}
 			return
 		}
 		// Assume we've got a URI.
-		tndrSource, ok := s.TemplSource.Get(uri)
+		tndrSource, ok := s.TndrSource.Get(uri)
 		if !ok {
 			if !ok {
 				Error(w, "uri not found in document contents", http.StatusNotFound)
@@ -88,7 +88,7 @@ func getSourceMapURL(uri string) tndr.SafeURL {
 	return withQuery("/sourcemap", uri)
 }
 
-func getTemplURL(uri string) tndr.SafeURL {
+func getTndrURL(uri string) tndr.SafeURL {
 	return withQuery("/tndr", uri)
 }
 

@@ -14,7 +14,7 @@ func NewDiagnosticCache() *DiagnosticCache {
 }
 
 type fileDiagnostic struct {
-	templDiagnostics []lsp.Diagnostic
+	tndrDiagnostics  []lsp.Diagnostic
 	goplsDiagnostics []lsp.Diagnostic
 }
 
@@ -30,32 +30,32 @@ func zeroLengthSliceIfNil(diags []lsp.Diagnostic) []lsp.Diagnostic {
 	return diags
 }
 
-func (dc *DiagnosticCache) AddTemplDiagnostics(uri string, goDiagnostics []lsp.Diagnostic) []lsp.Diagnostic {
+func (dc *DiagnosticCache) AddTndrDiagnostics(uri string, goDiagnostics []lsp.Diagnostic) []lsp.Diagnostic {
 	goDiagnostics = zeroLengthSliceIfNil(goDiagnostics)
 	dc.m.Lock()
 	defer dc.m.Unlock()
 	diag := dc.cache[uri]
 	diag.goplsDiagnostics = goDiagnostics
-	diag.templDiagnostics = zeroLengthSliceIfNil(diag.templDiagnostics)
+	diag.tndrDiagnostics = zeroLengthSliceIfNil(diag.tndrDiagnostics)
 	dc.cache[uri] = diag
-	return append(diag.templDiagnostics, goDiagnostics...)
+	return append(diag.tndrDiagnostics, goDiagnostics...)
 }
 
-func (dc *DiagnosticCache) ClearTemplDiagnostics(uri string) {
+func (dc *DiagnosticCache) ClearTndrDiagnostics(uri string) {
 	dc.m.Lock()
 	defer dc.m.Unlock()
 	diag := dc.cache[uri]
-	diag.templDiagnostics = make([]lsp.Diagnostic, 0)
+	diag.tndrDiagnostics = make([]lsp.Diagnostic, 0)
 	dc.cache[uri] = diag
 }
 
-func (dc *DiagnosticCache) AddGoDiagnostics(uri string, templDiagnostics []lsp.Diagnostic) []lsp.Diagnostic {
-	templDiagnostics = zeroLengthSliceIfNil(templDiagnostics)
+func (dc *DiagnosticCache) AddGoDiagnostics(uri string, tndrDiagnostics []lsp.Diagnostic) []lsp.Diagnostic {
+	tndrDiagnostics = zeroLengthSliceIfNil(tndrDiagnostics)
 	dc.m.Lock()
 	defer dc.m.Unlock()
 	diag := dc.cache[uri]
-	diag.templDiagnostics = templDiagnostics
+	diag.tndrDiagnostics = tndrDiagnostics
 	diag.goplsDiagnostics = zeroLengthSliceIfNil(diag.goplsDiagnostics)
 	dc.cache[uri] = diag
-	return append(diag.goplsDiagnostics, templDiagnostics...)
+	return append(diag.goplsDiagnostics, tndrDiagnostics...)
 }

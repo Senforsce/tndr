@@ -24,11 +24,11 @@ The live reload JavaScript is only injected by the templ proxy if your HTML file
 
 The "reload" event can be triggered in two ways:
 
-- `templ generate --watch` sends the event whenever a ".templ" file changes.
+- `templ generate --watch` sends the event whenever a ".t1" file changes.
 - Manually trigger it by sending a HTTP POST request to `/_templ/reload/event` endpoint. The `templ` CLI provides this via `templ generate --notify-proxy`.
 
 :::tip
-templ proxy server `--watch` mode generates different `_templ.go` files. In `--watch` mode `_templ.txt` files are generated that contain just the text that's in templ files. This is used to skip compilation of the Go code when only the text content changes.
+templ proxy server `--watch` mode generates different `_tndr.go` files. In `--watch` mode `_tndr.txt` files are generated that contain just the text that's in templ files. This is used to skip compilation of the Go code when only the text content changes.
 :::
 
 ## Setting up the Makefile
@@ -53,7 +53,7 @@ Tailwind requires a `tailwind.config.js` file at the root of your project, along
 npx --yes tailwindcss -i ./input.css -o ./assets/styles.css --minify --watch
 ```
 
-This will watch `input.css` as well as your `.templ` files and re-generate `assets/styles.css` whenever there's a change.
+This will watch `input.css` as well as your `.t1` files and re-generate `assets/styles.css` whenever there's a change.
 
 ### esbuild
 
@@ -167,10 +167,10 @@ mux.Handle("/assets/",
 A `Makefile` can be used to run all of the commands in parallel.
 
 ```make
-# run templ generation in watch mode to detect all .templ files and 
-# re-create _templ.txt files on change, then send reload event to browser. 
+# run templ generation in watch mode to detect all .t1 files and 
+# re-create _tndr.txt files on change, then send reload event to browser. 
 # Default url: http://localhost:7331
-live/templ:
+live/tndr:
 	templ generate --watch --proxy="http://localhost:8080" --open-browser=false -v
 
 # run air to detect any go file changes to re-build and re-run the server.

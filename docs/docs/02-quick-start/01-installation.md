@@ -99,7 +99,7 @@ This flake exposes an overlay, so you can add it to your own Flake and/or NixOS 
 
 ## Docker
 
-A Docker container is pushed on each release to https://github.com/senforsce/tndr/pkgs/container/templ
+A Docker container is pushed on each release to https://github.com/senforsce/tndr/pkgs/container/tndr
 
 Pull the latest version with:
 

@@ -35,7 +35,7 @@ func TestCompletion(t *testing.T) {
 	defer teardown(t)
 	defer cancel()
 
-	templFile, err := os.ReadFile(appDir + "/templates.t1")
+	tndrFile, err := os.ReadFile(appDir + "/templates.t1")
 	if err != nil {
 		t.Errorf("failed to read file %q: %v", appDir+"/templates.t1", err)
 		return
@@ -43,9 +43,9 @@ func TestCompletion(t *testing.T) {
 	err = server.DidOpen(ctx, &protocol.DidOpenTextDocumentParams{
 		TextDocument: protocol.TextDocumentItem{
 			URI:        uri.URI("file://" + appDir + "/templates.t1"),
-			LanguageID: "templ",
+			LanguageID: "tndr",
 			Version:    1,
-			Text:       string(templFile),
+			Text:       string(tndrFile),
 		},
 	})
 	if err != nil {
@@ -105,7 +105,7 @@ func TestCompletion(t *testing.T) {
 	for i, test := range tests {
 		t.Run(fmt.Sprintf("test-%d", i), func(t *testing.T) {
 			// Edit the file.
-			updated := testproject.MustReplaceLine(string(templFile), test.line, test.replacement)
+			updated := testproject.MustReplaceLine(string(tndrFile), test.line, test.replacement)
 			err = server.DidChange(ctx, &protocol.DidChangeTextDocumentParams{
 				TextDocument: protocol.VersionedTextDocumentIdentifier{
 					TextDocumentIdentifier: protocol.TextDocumentIdentifier{
@@ -178,16 +178,16 @@ func TestHover(t *testing.T) {
 	defer teardown(t)
 	defer cancel()
 
-	templFile, err := os.ReadFile(appDir + "/templates.t1")
+	tndrFile, err := os.ReadFile(appDir + "/templates.t1")
 	if err != nil {
 		t.Fatalf("failed to read file %q: %v", appDir+"/templates.t1", err)
 	}
 	err = server.DidOpen(ctx, &protocol.DidOpenTextDocumentParams{
 		TextDocument: protocol.TextDocumentItem{
 			URI:        uri.URI("file://" + appDir + "/templates.t1"),
-			LanguageID: "templ",
+			LanguageID: "tndr",
 			Version:    1,
-			Text:       string(templFile),
+			Text:       string(tndrFile),
 		},
 	})
 	if err != nil {
@@ -277,7 +277,7 @@ func TestHover(t *testing.T) {
 				ContentChanges: []protocol.TextDocumentContentChangeEvent{
 					{
 						Range: nil,
-						Text:  string(templFile),
+						Text:  string(tndrFile),
 					},
 				},
 			})
@@ -499,7 +499,7 @@ func TestCodeAction(t *testing.T) {
 	defer teardown(t)
 	defer cancel()
 
-	templFile, err := os.ReadFile(appDir + "/templates.t1")
+	tndrFile, err := os.ReadFile(appDir + "/templates.t1")
 	if err != nil {
 		t.Fatalf("failed to read file %q: %v", appDir+"/templates.t1", err)
 	}
@@ -508,7 +508,7 @@ func TestCodeAction(t *testing.T) {
 			URI:        uri.URI("file://" + appDir + "/templates.t1"),
 			LanguageID: "tndr",
 			Version:    1,
-			Text:       string(templFile),
+			Text:       string(tndrFile),
 		},
 	})
 	if err != nil {
@@ -558,7 +558,7 @@ func TestCodeAction(t *testing.T) {
 				ContentChanges: []protocol.TextDocumentContentChangeEvent{
 					{
 						Range: nil,
-						Text:  string(templFile),
+						Text:  string(tndrFile),
 					},
 				},
 			})
@@ -680,7 +680,7 @@ func TestDocumentSymbol(t *testing.T) {
 			},
 		},
 		{
-			uri: "file://" + appDir + "/remoteparent.tndr",
+			uri: "file://" + appDir + "/remoteparent.t1",
 			expect: []protocol.SymbolInformationOrDocumentSymbol{
 				{
 					SymbolInformation: &protocol.SymbolInformation{

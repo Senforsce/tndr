@@ -2,7 +2,7 @@ package turbo
 
 t1 actionTemplate(action string, target string) {
 	<turbo-stream action={ action } target={ target }>
-		<template id="test">
+		<template id={ tr.Echo("test") }>
 			{ children... }
 		</template>
 	</turbo-stream>

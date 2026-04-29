@@ -1,6 +1,0 @@
-package testjsunsafeusage
-
-t1 TestComponent() {
-	<button onClick={ tndr.JSUnsafeFuncCall("anythingILike('blah')") }>Click me</button>
-	@tndr.JSUnsafeFuncCall("// Arbitrary JS code")
-}

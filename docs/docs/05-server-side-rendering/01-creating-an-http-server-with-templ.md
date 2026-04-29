@@ -59,15 +59,15 @@ import (
 )
 
 func main() {
-	http.Handle("/", templ.Handler(timeComponent(time.Now())))
-	http.Handle("/404", templ.Handler(notFoundComponent(), templ.WithStatus(http.StatusNotFound)))
+	http.Handle("/", tndr.Handler(timeComponent(time.Now())))
+	http.Handle("/404", tndr.Handler(notFoundComponent(), tndr.WithStatus(http.StatusNotFound)))
 
 	http.ListenAndServe(":8080", nil)
 }
 ```
 
 :::tip
-The `templ.WithStatus`, `templ.WithContentType`, and `templ.WithErrorHandler` functions can be passed as parameters to the `templ.Handler` function to control how content is rendered.
+The `tndr.WithStatus`, `tndr.WithContentType`, and `tndr.WithErrorHandler` functions can be passed as parameters to the `tndr.Handler` function to control how content is rendered.
 :::
 
 The output will always be the date and time that the web server was started up, not the current time.

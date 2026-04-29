@@ -7,3 +7,4 @@ func invalid(a: string) string {
 t1 multipleError(a: string) {
     <div/>
 }
+§

@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	templ "github.com/senforsce/tndr"
+	"github.com/senforsce/tndr"
 )
 
 // GeneratedComponentInput is used to avoid generated code needing to import the `context` and `io` packages.
@@ -14,8 +14,8 @@ type GeneratedComponentInput struct {
 }
 
 // GeneratedTemplate is used to avoid generated code needing to import the `context` and `io` packages.
-func GeneratedTemplate(f func(GeneratedComponentInput) error) templ.Component {
-	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+func GeneratedTemplate(f func(GeneratedComponentInput) error) tndr.Component {
+	return tndr.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		return f(GeneratedComponentInput{ctx, w})
 	})
 }

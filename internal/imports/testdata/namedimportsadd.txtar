@@ -1,4 +1,4 @@
--- fmt_templ.t1 --
+-- fmt_tndr.t1 --
 package test
 
 import (
@@ -7,7 +7,7 @@ import (
 
 // Comment on variable or function.
 var x = fmt.Sprintf(sconv.Quote("Hello"))
--- fmt_templ.t1 --
+-- fmt_tndr.t1 --
 package test
 
 import (

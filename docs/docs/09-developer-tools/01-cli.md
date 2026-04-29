@@ -7,7 +7,7 @@ usage: t1 <command> [<args>...]
 
 tndr - build HTML UIs with Go
 
-See docs at https://templ.guide
+See docs at https://tndr.guide
 
 commands:
   generate   Generates Go code from t1 files
@@ -68,7 +68,7 @@ Args:
 For example, to generate code for a single file:
 
 ```
-t1 generate -f header.templ
+t1 generate -f header.t1
 ```
 
 ## Formatting tndr files

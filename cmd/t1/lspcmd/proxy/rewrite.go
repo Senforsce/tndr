@@ -7,15 +7,15 @@ import (
 	lsp "github.com/senforsce/tndr/lsp/protocol"
 )
 
-func convertTndrToGoURI(templURI lsp.DocumentURI) (isTemplFile bool, goURI lsp.DocumentURI) {
-	base, fileName := path.Split(string(templURI))
+func convertTndrToGoURI(tndrURI lsp.DocumentURI) (isTndrFile bool, goURI lsp.DocumentURI) {
+	base, fileName := path.Split(string(tndrURI))
 	if !strings.HasSuffix(fileName, ".t1") {
 		return
 	}
 	return true, lsp.DocumentURI(base + (strings.TrimSuffix(fileName, ".t1") + "_t1.go"))
 }
 
-func convertTndrGoToTndrURI(goURI lsp.DocumentURI) (isTemplGoFile bool, t1URI lsp.DocumentURI) {
+func convertTndrGoToTndrURI(goURI lsp.DocumentURI) (isTndrGoFile bool, t1URI lsp.DocumentURI) {
 	base, fileName := path.Split(string(goURI))
 	if !strings.HasSuffix(fileName, "_t1.go") {
 		return

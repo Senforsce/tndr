@@ -186,7 +186,7 @@ func TestDefaultWatchPattern(t *testing.T) {
 
 func TestArgs(t *testing.T) {
 	t.Run("Help is true if the help flag is set", func(t *testing.T) {
-		_, _, help, err := NewArguments(io.Discard, io.Discard, []string{"-help"})
+		_, help, err := NewArguments(io.Discard, io.Discard, []string{"-help"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -195,7 +195,7 @@ func TestArgs(t *testing.T) {
 		}
 	})
 	t.Run("Help is false if the help flag is not set", func(t *testing.T) {
-		_, _, help, err := NewArguments(io.Discard, io.Discard, []string{})
+		_, help, err := NewArguments(io.Discard, io.Discard, []string{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -204,7 +204,7 @@ func TestArgs(t *testing.T) {
 		}
 	})
 	t.Run("The worker count is set to the number of CPUs if not specified", func(t *testing.T) {
-		args, _, _, err := NewArguments(io.Discard, io.Discard, []string{})
+		args, _, err := NewArguments(io.Discard, io.Discard, []string{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -213,13 +213,13 @@ func TestArgs(t *testing.T) {
 		}
 	})
 	t.Run("If toStdout is true, the file name must be specified", func(t *testing.T) {
-		_, _, _, err := NewArguments(io.Discard, io.Discard, []string{"-stdout"})
+		_, _, err := NewArguments(io.Discard, io.Discard, []string{"-stdout"})
 		if err == nil {
 			t.Fatal("expected error when toStdout is true but no file name is specified")
 		}
 	})
 	t.Run("If toStdout is true, and the file name is specified, it writes to stdout", func(t *testing.T) {
-		args, _, _, err := NewArguments(io.Discard, io.Discard, []string{"-stdout", "-f", "output.t1"})
+		args, _, err := NewArguments(io.Discard, io.Discard, []string{"-stdout", "-f", "output.t1"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -231,7 +231,7 @@ func TestArgs(t *testing.T) {
 		}
 	})
 	t.Run("If the watchPattern is empty, it defaults to the default pattern", func(t *testing.T) {
-		args, _, _, err := NewArguments(io.Discard, io.Discard, []string{})
+		args, _, err := NewArguments(io.Discard, io.Discard, []string{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -240,13 +240,13 @@ func TestArgs(t *testing.T) {
 		}
 	})
 	t.Run("If the watchPattern is set, it is checked for validity", func(t *testing.T) {
-		_, _, _, err := NewArguments(io.Discard, io.Discard, []string{"-watch-pattern", "invalid[pattern"})
+		_, _, err := NewArguments(io.Discard, io.Discard, []string{"-watch-pattern", "invalid[pattern"})
 		if err == nil {
 			t.Fatal("expected error when watch pattern is invalid")
 		}
 	})
 	t.Run("If the watch flag is set, watch is set to true", func(t *testing.T) {
-		args, _, _, err := NewArguments(io.Discard, io.Discard, []string{"-watch"})
+		args, _, err := NewArguments(io.Discard, io.Discard, []string{"-watch"})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -255,7 +255,7 @@ func TestArgs(t *testing.T) {
 		}
 	})
 	t.Run("If the watch flag is not set, watch is false", func(t *testing.T) {
-		args, _, _, err := NewArguments(io.Discard, io.Discard, []string{})
+		args, _, err := NewArguments(io.Discard, io.Discard, []string{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -264,7 +264,7 @@ func TestArgs(t *testing.T) {
 		}
 	})
 	t.Run("The cmd flag can be set to specify a command to run after generating", func(t *testing.T) {
-		args, _, _, err := NewArguments(io.Discard, io.Discard, []string{"-cmd", "echo hello"})
+		args, _, err := NewArguments(io.Discard, io.Discard, []string{"-cmd", "echo hello"})
 		if err != nil {
 			t.Fatal(err)
 		}

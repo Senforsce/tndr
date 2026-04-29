@@ -1,10 +1,10 @@
-# Using React with templ
+# Using React with tndr
 
 tndr is great for server-side rendering. Combined with [HTMX](https://htmx.org/), it's even more powerful, since HTMX can be used to replace elements within the page with updated HTML fetched from the server, providing many of the benefits of React with reduced overall complexity. See [/server-side-rendering/htmx](/server-side-rendering/htmx) for an example.
 
 However, React has a huge ecosystem of rich interactive components, so being able to tap into the ecosystem is very useful.
 
-With templ, it's more likely that you will use React components as [islands of interactivity](https://www.patterns.dev/vanilla/islands-architecture/) rather than taking over all aspects of displaying your app, with tndr taking over server-side rendering, but using React to provide specific features on the client side.
+With tndr, it's more likely that you will use React components as [islands of interactivity](https://www.patterns.dev/vanilla/islands-architecture/) rather than taking over all aspects of displaying your app, with tndr taking over server-side rendering, but using React to provide specific features on the client side.
 
 ## Using React components
 
@@ -52,7 +52,7 @@ Remember to run `tndr generate` when you've finished writing your tndr file.
 
 ### Render React components into the IDs
 
-Write TypeScript or JavaScript to render the React components into the HTML elements that are rendered by templ.
+Write TypeScript or JavaScript to render the React components into the HTML elements that are rendered by tndr.
 
 ```typescript title="react/index.ts"
 import { createRoot } from 'react-dom/client';
@@ -106,7 +106,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Serve the tndr page.
-	mux.Handle("/", templ.Handler(page()))
+	mux.Handle("/", tndr.Handler(page()))
 
 	// Serve static content.
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
@@ -121,16 +121,16 @@ func main() {
 
 ### Results
 
-Putting this together results in a web page that renders server-side HTML using templ. The server-side HTML includes a link to the static React bundle.
+Putting this together results in a web page that renders server-side HTML using tndr. The server-side HTML includes a link to the static React bundle.
 
 ```mermaid
 sequenceDiagram
     browser->>app: GET /
     activate app
-	app->>templ_component: Render
-	activate templ_component
-	templ_component->>app: HTML
-	deactivate templ_component
+	app->>tndr_component: Render
+	activate tndr_component
+	tndr_component->>app: HTML
+	deactivate tndr_component
     app->>browser: HTML
     deactivate app
 	browser->>app: GET /static/index.js
@@ -203,7 +203,7 @@ tndr page() {
 			<div id="react-header"></div>
 			<div id="react-content"></div>
 			<div>
-				This is server-side content from templ.
+				This is server-side content from tndr.
 			</div>
 			<!-- Load the React bundle that was created using esbuild -->
 			<!-- Since the bundle was coded to expect the react-header and react-content elements to exist already, in this case, the script has to be loaded after the elements are on the page -->
@@ -238,7 +238,7 @@ The HTML that's rendered is:
   <body>
     <div id="react-header"></div>
     <div id="react-content"></div>
-    <div>This is server-side content from templ.</div>
+    <div>This is server-side content from tndr.</div>
 
     <script src="static/index.js"></script>
 
@@ -269,7 +269,7 @@ And the browser shows the expected content after rendering the client side React
 ```
 React component Header
 This is client-side content from React
-This is server-side content from templ.
+This is server-side content from tndr.
 Hello Alice (Client-side React, rendering server-side data)
 Hello Bob (Client-side React, rendering server-side data)
 Hello Charlie (Client-side React, rendering server-side data)

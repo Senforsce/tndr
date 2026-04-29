@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 
+	parser "github.com/senforsce/t1parsers"
+	"github.com/senforsce/t1parsers/visitor"
 	"github.com/senforsce/tndr/internal/imports"
 	"github.com/senforsce/tndr/internal/prettier"
-	parser "github.com/senforsce/tndr/parser/v2"
-	"github.com/senforsce/tndr/parser/v2/visitor"
 )
 
 type Config struct {
@@ -18,9 +18,9 @@ type Config struct {
 	PrettierRequired bool
 }
 
-// Templ formats t1 source, returning the formatted output, whether it changed, and an error if any.
+// Tndr formats t1 source, returning the formatted output, whether it changed, and an error if any.
 // The fileName is used for Go import processing, use an empty name if the source is not from a file.
-func Templ(src []byte, fileName string, config Config) (output []byte, changed bool, err error) {
+func Tndr(src []byte, fileName string, config Config) (output []byte, changed bool, err error) {
 	t, err := parser.ParseString(string(src))
 	if err != nil {
 		return nil, false, err

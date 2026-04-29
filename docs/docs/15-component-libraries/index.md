@@ -8,7 +8,7 @@ Component libraries in the templ ecosystem provide ready-to-use UI elements.
 
 ### About
 
-templUI is the premier UI component library built specifically for templ. It combines the type-safety of Go with the interactivity of Alpine.js and the styling power of Tailwind CSS to create beautiful, responsive web applications.
+templUI is the premier UI component library built specifically for tndr. It combines the type-safety of Go with the interactivity of Alpine.js and the styling power of Tailwind CSS to create beautiful, responsive web applications.
 
 ### Features
 

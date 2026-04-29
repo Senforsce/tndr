@@ -1,4 +1,4 @@
--- fmt_templ.t1 --
+-- fmt_tndr.t1 --
 // Comments before.
 /*
   Some more comments
@@ -11,7 +11,7 @@ t1 test() {
 
 // Comment on variable or function.
 var x = fmt.Sprintf("Hello")
--- fmt_templ.t1 --
+-- fmt_tndr.t1 --
 // Comments before.
 /*
   Some more comments

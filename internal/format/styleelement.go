@@ -1,8 +1,8 @@
 package format
 
 import (
+	parser "github.com/senforsce/t1parsers"
 	"github.com/senforsce/tndr/internal/prettier"
-	"github.com/senforsce/tndr/parser/v2"
 )
 
 func StyleElement(se *parser.RawElement, depth int, prettierCommand string) (err error) {

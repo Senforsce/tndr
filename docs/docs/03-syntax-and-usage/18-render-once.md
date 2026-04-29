@@ -15,7 +15,7 @@ Dont write `@tndr.NewOnceHandle().Once()` - this creates a new `*OnceHandler` ea
 ```tndr title="component.t1"
 package once
 
-var helloHandle = templ.NewOnceHandle()
+var helloHandle = tndr.NewOnceHandle()
 
 t1 hello(label, name string) {
   @helloHandle.Once() {
@@ -67,7 +67,7 @@ For example, create a `deps` package that contains a `JQuery` component that ren
 ```tndr title="deps/deps.t1"
 package deps
 
-var jqueryHandle = templ.NewOnceHandle()
+var jqueryHandle = tndr.NewOnceHandle()
 
 t1 JQuery() {
   @jqueryHandle.Once() {

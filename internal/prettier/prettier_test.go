@@ -37,7 +37,7 @@ func TestIsAvailable(t *testing.T) {
 		t.Skip("Skipping IsAvailable test in short mode")
 	}
 	t.Run("non-existent commands return false", func(t *testing.T) {
-		var nonExistentCommand = "templ_non_existent_command --use-tabs --stdin-filepath $TEMPL_PRETTIER_FILENAME"
+		var nonExistentCommand = "tndr_non_existent_command --use-tabs --stdin-filepath $TNDR_PRETTIER_FILENAME"
 		if IsAvailable(nonExistentCommand) {
 			t.Errorf("IsAvailable should return false for non-existent command %q", nonExistentCommand)
 		}

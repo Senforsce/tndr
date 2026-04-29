@@ -23,8 +23,8 @@ func TestWatchDebouncesDuplicates(t *testing.T) {
 		t.Fatal(fmt.Errorf("failed to create recursive watcher: %w", err))
 	}
 	go func() {
-		rw.w.Events <- fsnotify.Event{Name: "test.templ"}
-		rw.w.Events <- fsnotify.Event{Name: "test.templ"}
+		rw.w.Events <- fsnotify.Event{Name: "test.t1"}
+		rw.w.Events <- fsnotify.Event{Name: "test.t1"}
 	}()
 	count := 0
 	exp := time.After(300 * time.Millisecond)
@@ -51,16 +51,16 @@ func TestWatchDoesNotDebounceDifferentEvents(t *testing.T) {
 		event2 fsnotify.Event
 	}{
 		// Different files
-		{fsnotify.Event{Name: "test.templ"}, fsnotify.Event{Name: "test2.templ"}},
+		{fsnotify.Event{Name: "test.t1"}, fsnotify.Event{Name: "test2.t1"}},
 		// Different operations
 		{
-			fsnotify.Event{Name: "test.templ", Op: fsnotify.Create},
-			fsnotify.Event{Name: "test.templ", Op: fsnotify.Write},
+			fsnotify.Event{Name: "test.t1", Op: fsnotify.Create},
+			fsnotify.Event{Name: "test.t1", Op: fsnotify.Write},
 		},
 		// Different operations and files
 		{
-			fsnotify.Event{Name: "test.templ", Op: fsnotify.Create},
-			fsnotify.Event{Name: "test2.templ", Op: fsnotify.Write},
+			fsnotify.Event{Name: "test.t1", Op: fsnotify.Create},
+			fsnotify.Event{Name: "test2.t1", Op: fsnotify.Write},
 		},
 	}
 	for _, test := range tests {
@@ -112,9 +112,9 @@ func TestWatchDoesNotDebounceSeparateEvents(t *testing.T) {
 		t.Fatal(fmt.Errorf("failed to create recursive watcher: %w", err))
 	}
 	go func() {
-		rw.w.Events <- fsnotify.Event{Name: "test.templ"}
+		rw.w.Events <- fsnotify.Event{Name: "test.t1"}
 		<-time.After(200 * time.Millisecond)
-		rw.w.Events <- fsnotify.Event{Name: "test.templ"}
+		rw.w.Events <- fsnotify.Event{Name: "test.t1"}
 	}()
 	count := 0
 	exp := time.After(500 * time.Millisecond)

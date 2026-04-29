@@ -4,7 +4,7 @@ Tndr components can be used with the Go standard library [`html/template`](https
 
 ## Using `html/template` in a tndr component
 
-To use an existing `html/template` in a tndr component, use the `templ.FromGoHTML` function.
+To use an existing `html/template` in a tndr component, use the `tndr.FromGoHTML` function.
 
 ```tndr title="component.t1"
 package testgotemplates
@@ -17,7 +17,7 @@ t1 Example() {
 	<!DOCTYPE html>
 	<html>
 		<body>
-			@templ.FromGoHTML(goTemplate, "Hello, World!")
+			@tndr.FromGoHTML(goTemplate, "Hello, World!")
 		</body>
 	</html>
 }
@@ -40,7 +40,7 @@ func main() {
 
 ## Using a tndr component with	`html/template`
 
-To use a tndr component within a `html/template`, use the `templ.ToGoHTML` function to render the component into a `template.HTML value`.
+To use a tndr component within a `html/template`, use the `tndr.ToGoHTML` function to render the component into a `template.HTML value`.
 
 ```tndr title="component.html"
 package testgotemplates
@@ -66,7 +66,7 @@ func main() {
 	templComponent := greeting()
 
 	// Render the tndr component to a `template.HTML` value.
-	html, err := templ.ToGoHTML(context.Background(), templComponent)
+	html, err := tndr.ToGoHTML(context.Background(), templComponent)
 	if err != nil {
 		t.Fatalf("failed to convert to html: %v", err)
 	}

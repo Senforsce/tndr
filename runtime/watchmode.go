@@ -15,28 +15,28 @@ import (
 	"time"
 )
 
-var developmentMode = os.Getenv("TEMPL_DEV_MODE") == "true"
+var developmentMode = os.Getenv("TNDR_DEV_MODE") == "true"
 
-func GetDevModeTextFileName(templFileName string) string {
-	if strings.HasSuffix(templFileName, "_templ.go") {
-		templFileName = strings.TrimSuffix(templFileName, "_templ.go") + ".templ"
+func GetDevModeTextFileName(tndrFilename string) string {
+	if strings.HasSuffix(tndrFilename, "_t1.go") {
+		tndrFilename = strings.TrimSuffix(tndrFilename, "_t1.go") + ".t1"
 	}
-	absFileName, err := filepath.Abs(templFileName)
+	absFileName, err := filepath.Abs(tndrFilename)
 	if err != nil {
-		absFileName = templFileName
+		absFileName = tndrFilename
 	}
 	absFileName, err = filepath.EvalSymlinks(absFileName)
 	if err != nil {
-		absFileName = templFileName
+		absFileName = tndrFilename
 	}
 	absFileName = normalizePath(absFileName)
 
 	hashedFileName := sha256.Sum256([]byte(absFileName))
-	outputFileName := fmt.Sprintf("templ_%s.txt", hex.EncodeToString(hashedFileName[:]))
+	outputFileName := fmt.Sprintf("t1_%s.txt", hex.EncodeToString(hashedFileName[:]))
 
 	root := os.TempDir()
-	if os.Getenv("TEMPL_DEV_MODE_ROOT") != "" {
-		root = os.Getenv("TEMPL_DEV_MODE_ROOT")
+	if os.Getenv("TNDR_DEV_MODE_ROOT") != "" {
+		root = os.Getenv("TNDR_DEV_MODE_ROOT")
 	}
 
 	return filepath.Join(root, outputFileName)
@@ -54,25 +54,25 @@ func normalizePath(p string) string {
 }
 
 // WriteString writes the string to the writer. If development mode is enabled
-// s is replaced with the string at the index in the _templ.txt file.
+// s is replaced with the string at the index in the _tndr.txt file.
 func WriteString(w io.Writer, index int, s string) (err error) {
 	if developmentMode {
 		_, path, _, _ := runtime.Caller(1)
-		if !strings.HasSuffix(path, "_templ.go") {
-			return errors.New("templ: attempt to use WriteString from a non t1 file")
+		if !strings.HasSuffix(path, "_t1.go") {
+			return errors.New("tndr: attempt to use WriteString from a non t1 file")
 		}
 		path, err := filepath.EvalSymlinks(path)
 		if err != nil {
-			return fmt.Errorf("templ: failed to eval symlinks for %q: %w", path, err)
+			return fmt.Errorf("tndr: failed to eval symlinks for %q: %w", path, err)
 		}
 
 		txtFilePath := GetDevModeTextFileName(path)
 		literals, err := getWatchedStrings(txtFilePath)
 		if err != nil {
-			return fmt.Errorf("templ: failed to get watched strings for %q: %w", path, err)
+			return fmt.Errorf("tndr: failed to get watched strings for %q: %w", path, err)
 		}
 		if index > len(literals) {
-			return fmt.Errorf("templ: failed to find line %d in %s", index, txtFilePath)
+			return fmt.Errorf("tndr: failed to find line %d in %s", index, txtFilePath)
 		}
 
 		s, err = strconv.Unquote(`"` + literals[index-1] + `"`)
@@ -109,7 +109,7 @@ func getWatchedStrings(txtFilePath string) ([]string, error) {
 
 	info, err := os.Stat(txtFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("templ: failed to stat %s: %w", txtFilePath, err)
+		return nil, fmt.Errorf("tndr: failed to stat %s: %w", txtFilePath, err)
 	}
 
 	if !info.ModTime().After(state.modTime) {
@@ -122,7 +122,7 @@ func getWatchedStrings(txtFilePath string) ([]string, error) {
 func cacheStrings(txtFilePath string) ([]string, error) {
 	txtFile, err := os.Open(txtFilePath)
 	if err != nil {
-		return nil, fmt.Errorf("templ: failed to open %s: %w", txtFilePath, err)
+		return nil, fmt.Errorf("tndr: failed to open %s: %w", txtFilePath, err)
 	}
 	defer func() {
 		_ = txtFile.Close()
@@ -130,12 +130,12 @@ func cacheStrings(txtFilePath string) ([]string, error) {
 
 	info, err := txtFile.Stat()
 	if err != nil {
-		return nil, fmt.Errorf("templ: failed to stat %s: %w", txtFilePath, err)
+		return nil, fmt.Errorf("tndr: failed to stat %s: %w", txtFilePath, err)
 	}
 
 	all, err := io.ReadAll(txtFile)
 	if err != nil {
-		return nil, fmt.Errorf("templ: failed to read %s: %w", txtFilePath, err)
+		return nil, fmt.Errorf("tndr: failed to read %s: %w", txtFilePath, err)
 	}
 
 	literals := strings.Split(string(all), "\n")

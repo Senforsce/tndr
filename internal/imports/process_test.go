@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	parser "github.com/senforsce/t1parsers"
 	"github.com/senforsce/tndr/cmd/t1/testproject"
-	"github.com/senforsce/tndr/parser/v2"
 	"golang.org/x/tools/txtar"
 )
 

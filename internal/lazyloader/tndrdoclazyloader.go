@@ -9,8 +9,8 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-// TemplDocLazyLoader lazily loads t1 documents as necessary.
-type TemplDocLazyLoader interface {
+// TndrDocLazyLoader lazily loads t1 documents as necessary.
+type TndrDocLazyLoader interface {
 	// Load loads a t1 document and its dependencies.
 	Load(ctx context.Context, params *lsp.DidOpenTextDocumentParams) error
 
@@ -24,26 +24,26 @@ type TemplDocLazyLoader interface {
 	HasLoaded(doc lsp.TextDocumentIdentifier) bool
 }
 
-// templDocLazyLoader is a loader that uses the go/packages API to lazily load t1 documents in the dependency graph.
-type templDocLazyLoader struct {
+// tndrDocLazyLoader is a loader that uses the go/packages API to lazily load t1 documents in the dependency graph.
+type tndrDocLazyLoader struct {
 	loadedPkgs      map[string]*packages.Package
 	openDocHeaders  map[string]docHeader
 	docsPendingLoad map[string]struct{}
 	pkgLoader       pkgLoader
 	pkgTraverser    pkgTraverser
 	docHeaderParser docHeaderParser
-	docHandler      TemplDocHandler
+	docHandler      TndrDocHandler
 }
 
 // NewParams specifies the parameters necessary to create a new lazy loader.
 type NewParams struct {
-	TemplDocHandler TemplDocHandler
-	OpenDocSources  map[string]string
+	TndrDocHandler TndrDocHandler
+	OpenDocSources map[string]string
 }
 
 // New creates a new lazy loader using the provided arguments.
-func New(params NewParams) TemplDocLazyLoader {
-	return &templDocLazyLoader{
+func New(params NewParams) TndrDocLazyLoader {
+	return &tndrDocLazyLoader{
 		loadedPkgs:      make(map[string]*packages.Package),
 		openDocHeaders:  make(map[string]docHeader),
 		docsPendingLoad: make(map[string]struct{}),
@@ -52,20 +52,20 @@ func New(params NewParams) TemplDocLazyLoader {
 			loadPackages:   packages.Load,
 		},
 		pkgTraverser: &goPkgTraverser{
-			templDocHandler: params.TemplDocHandler,
-			pkgsRefCount:    make(map[string]int),
-			fileReader:      templFileReader{},
+			tndrDocHandler: params.TndrDocHandler,
+			pkgsRefCount:   make(map[string]int),
+			fileReader:     tndrFileReader{},
 		},
 		docHeaderParser: &goDocHeaderParser{
 			openDocSources: params.OpenDocSources,
 			fileParser:     goFileParser{},
 		},
-		docHandler: params.TemplDocHandler,
+		docHandler: params.TndrDocHandler,
 	}
 }
 
 // Load loads all t1 documents in the dependency graph topologically (dependencies are loaded before dependents).
-func (l *templDocLazyLoader) Load(ctx context.Context, params *lsp.DidOpenTextDocumentParams) error {
+func (l *tndrDocLazyLoader) Load(ctx context.Context, params *lsp.DidOpenTextDocumentParams) error {
 	filename := params.TextDocument.URI.Filename()
 
 	pkg, err := l.pkgLoader.load(filename)
@@ -88,7 +88,7 @@ func (l *templDocLazyLoader) Load(ctx context.Context, params *lsp.DidOpenTextDo
 }
 
 // Sync loads t1 documents in newly added dependencies and unloads those that are no longer necessary.
-func (l *templDocLazyLoader) Sync(ctx context.Context, params *lsp.DidChangeTextDocumentParams) error {
+func (l *tndrDocLazyLoader) Sync(ctx context.Context, params *lsp.DidChangeTextDocumentParams) error {
 	filename := params.TextDocument.URI.Filename()
 
 	header := l.openDocHeaders[filename]
@@ -129,7 +129,7 @@ func (l *templDocLazyLoader) Sync(ctx context.Context, params *lsp.DidChangeText
 }
 
 // Unload unloads all t1 documents in the dependency graph topologically (dependents are unloaded before dependencies).
-func (l *templDocLazyLoader) Unload(ctx context.Context, params *lsp.DidCloseTextDocumentParams) error {
+func (l *tndrDocLazyLoader) Unload(ctx context.Context, params *lsp.DidCloseTextDocumentParams) error {
 	filename := params.TextDocument.URI.Filename()
 
 	pkg, err := l.pkgLoader.load(filename)
@@ -151,7 +151,7 @@ func (l *templDocLazyLoader) Unload(ctx context.Context, params *lsp.DidCloseTex
 	return nil
 }
 
-func (l *templDocLazyLoader) HasLoaded(doc lsp.TextDocumentIdentifier) bool {
+func (l *tndrDocLazyLoader) HasLoaded(doc lsp.TextDocumentIdentifier) bool {
 	if _, ok := l.docsPendingLoad[doc.URI.Filename()]; ok {
 		return false
 	}

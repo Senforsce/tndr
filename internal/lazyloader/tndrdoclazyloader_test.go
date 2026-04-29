@@ -11,10 +11,10 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func TestTemplDocLazyLoaderLoad(t *testing.T) {
+func TestTndrDocLazyLoaderLoad(t *testing.T) {
 	tests := []struct {
 		name                string
-		loader              *templDocLazyLoader
+		loader              *tndrDocLazyLoader
 		params              *lsp.DidOpenTextDocumentParams
 		wantLoadedPkgs      map[string]*packages.Package
 		wantOpenDocHeaders  map[string]docHeader
@@ -23,7 +23,7 @@ func TestTemplDocLazyLoaderLoad(t *testing.T) {
 	}{
 		{
 			name: "load package failed",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				pkgLoader: &goPkgLoader{
 					loadPackages: func(_ *packages.Config, _ ...string) ([]*packages.Package, error) {
 						return nil, assert.AnError
@@ -39,13 +39,13 @@ func TestTemplDocLazyLoaderLoad(t *testing.T) {
 		},
 		{
 			name: "load package failed with no packages loaded",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				pkgLoader: &goPkgLoader{
 					loadPackages: func(_ *packages.Config, _ ...string) ([]*packages.Package, error) {
 						return nil, errNoPkgsLoaded
 					},
 				},
-				docHandler: &mockTemplDocHandler{
+				docHandler: &mockTndrDocHandler{
 					openedDocs: map[string]int{},
 					error:      errors.New("mock error"),
 				},
@@ -63,7 +63,7 @@ func TestTemplDocLazyLoaderLoad(t *testing.T) {
 		},
 		{
 			name: "open topologically failed",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				pkgLoader: &goPkgLoader{
 					loadPackages: func(_ *packages.Config, _ ...string) ([]*packages.Package, error) {
 						return []*packages.Package{{PkgPath: "foo_pkg"}}, nil
@@ -82,7 +82,7 @@ func TestTemplDocLazyLoaderLoad(t *testing.T) {
 		},
 		{
 			name: "loaded successfully",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				pkgLoader: &goPkgLoader{
 					loadPackages: func(_ *packages.Config, _ ...string) ([]*packages.Package, error) {
 						return []*packages.Package{{PkgPath: "foo_pkg"}}, nil
@@ -128,10 +128,10 @@ func TestTemplDocLazyLoaderLoad(t *testing.T) {
 	}
 }
 
-func TestTemplDocLazyLoaderSync(t *testing.T) {
+func TestTndrDocLazyLoaderSync(t *testing.T) {
 	tests := []struct {
 		name                string
-		loader              *templDocLazyLoader
+		loader              *tndrDocLazyLoader
 		params              *lsp.DidChangeTextDocumentParams
 		wantLoadedPkgs      map[string]*packages.Package
 		wantOpenDocHeaders  map[string]docHeader
@@ -142,7 +142,7 @@ func TestTemplDocLazyLoaderSync(t *testing.T) {
 	}{
 		{
 			name: "same header",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				openDocHeaders: map[string]docHeader{
 					"/foo.go": &goDocHeader{
 						pkgName: "foo_pkg",
@@ -188,7 +188,7 @@ func TestTemplDocLazyLoaderSync(t *testing.T) {
 		},
 		{
 			name: "load package failed",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				openDocHeaders: map[string]docHeader{},
 				docHeaderParser: &mockDocHeaderParser{
 					headers: map[string]docHeader{
@@ -231,7 +231,7 @@ func TestTemplDocLazyLoaderSync(t *testing.T) {
 		},
 		{
 			name: "open topologically failed when package never loaded",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				openDocHeaders: map[string]docHeader{},
 				docHeaderParser: &mockDocHeaderParser{
 					headers: map[string]docHeader{
@@ -285,7 +285,7 @@ func TestTemplDocLazyLoaderSync(t *testing.T) {
 		},
 		{
 			name: "successfully loaded package when never loaded",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				openDocHeaders: map[string]docHeader{},
 				docHeaderParser: &mockDocHeaderParser{
 					headers: map[string]docHeader{
@@ -351,7 +351,7 @@ func TestTemplDocLazyLoaderSync(t *testing.T) {
 		},
 		{
 			name: "open topologically failed",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				openDocHeaders: map[string]docHeader{},
 				docHeaderParser: &mockDocHeaderParser{
 					headers: map[string]docHeader{
@@ -412,7 +412,7 @@ func TestTemplDocLazyLoaderSync(t *testing.T) {
 		},
 		{
 			name: "close topologically failed",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				openDocHeaders: map[string]docHeader{},
 				docHeaderParser: &mockDocHeaderParser{
 					headers: map[string]docHeader{
@@ -471,7 +471,7 @@ func TestTemplDocLazyLoaderSync(t *testing.T) {
 		},
 		{
 			name: "synced successfully",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				openDocHeaders: map[string]docHeader{},
 				docHeaderParser: &mockDocHeaderParser{
 					headers: map[string]docHeader{
@@ -565,10 +565,10 @@ func TestTemplDocLazyLoaderSync(t *testing.T) {
 	}
 }
 
-func TestTemplDocLazyLoaderUnload(t *testing.T) {
+func TestTndrDocLazyLoaderUnload(t *testing.T) {
 	tests := []struct {
 		name                string
-		loader              *templDocLazyLoader
+		loader              *tndrDocLazyLoader
 		params              *lsp.DidCloseTextDocumentParams
 		wantLoadedPkgs      map[string]*packages.Package
 		wantOpenDocHeaders  map[string]docHeader
@@ -577,7 +577,7 @@ func TestTemplDocLazyLoaderUnload(t *testing.T) {
 	}{
 		{
 			name: "load package failed",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				pkgLoader: &goPkgLoader{
 					loadPackages: func(_ *packages.Config, _ ...string) ([]*packages.Package, error) {
 						return nil, assert.AnError
@@ -593,13 +593,13 @@ func TestTemplDocLazyLoaderUnload(t *testing.T) {
 		},
 		{
 			name: "load package failed with no packages loaded",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				pkgLoader: &goPkgLoader{
 					loadPackages: func(_ *packages.Config, _ ...string) ([]*packages.Package, error) {
 						return nil, errNoPkgsLoaded
 					},
 				},
-				docHandler: &mockTemplDocHandler{
+				docHandler: &mockTndrDocHandler{
 					closedDocs: map[string]int{},
 					error:      errors.New("mock error"),
 				},
@@ -617,7 +617,7 @@ func TestTemplDocLazyLoaderUnload(t *testing.T) {
 		},
 		{
 			name: "close topologically failed",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				pkgLoader: &goPkgLoader{
 					loadPackages: func(_ *packages.Config, _ ...string) ([]*packages.Package, error) {
 						return []*packages.Package{{PkgPath: "foo_pkg"}}, nil
@@ -636,7 +636,7 @@ func TestTemplDocLazyLoaderUnload(t *testing.T) {
 		},
 		{
 			name: "unloaded successfully",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				pkgLoader: &goPkgLoader{
 					loadPackages: func(_ *packages.Config, _ ...string) ([]*packages.Package, error) {
 						return []*packages.Package{{PkgPath: "foo_pkg"}}, nil
@@ -683,16 +683,16 @@ func TestTemplDocLazyLoaderUnload(t *testing.T) {
 	}
 }
 
-func TestTemplDocLazyLoaderHasLoaded(t *testing.T) {
+func TestTndrDocLazyLoaderHasLoaded(t *testing.T) {
 	tests := []struct {
 		name     string
-		loader   *templDocLazyLoader
+		loader   *tndrDocLazyLoader
 		doc      lsp.TextDocumentIdentifier
 		expected bool
 	}{
 		{
 			name: "doc pending load",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				docsPendingLoad: map[string]struct{}{
 					"/foo.go": {},
 				},
@@ -703,7 +703,7 @@ func TestTemplDocLazyLoaderHasLoaded(t *testing.T) {
 		},
 		{
 			name: "doc loaded",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				openDocHeaders: map[string]docHeader{
 					"/foo.go": &goDocHeader{pkgName: "foo_pkg"},
 				},
@@ -715,7 +715,7 @@ func TestTemplDocLazyLoaderHasLoaded(t *testing.T) {
 		},
 		{
 			name: "doc not loaded",
-			loader: &templDocLazyLoader{
+			loader: &tndrDocLazyLoader{
 				openDocHeaders: map[string]docHeader{},
 			},
 			doc: lsp.TextDocumentIdentifier{

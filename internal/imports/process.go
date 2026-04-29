@@ -17,14 +17,14 @@ import (
 	"golang.org/x/tools/go/ast/astutil"
 	"golang.org/x/tools/imports"
 
-	"github.com/senforsce/tndr/generator"
-	"github.com/senforsce/tndr/parser/v2"
+	"github.com/senforsce/generator"
+	parser "github.com/senforsce/t1parsers"
 )
 
 var internalImports = []string{"github.com/senforsce/tndr", "github.com/senforsce/tndr/runtime"}
 
-func convertTemplToGoURI(templURI string) (isTemplFile bool, goURI string) {
-	base, fileName := path.Split(templURI)
+func convertTndrToGoURI(tndrURI string) (isTndrFile bool, goURI string) {
+	base, fileName := path.Split(tndrURI)
 	if !strings.HasSuffix(fileName, ".t1") {
 		return
 	}
@@ -56,8 +56,8 @@ func Process(t *parser.TemplateFile) (*parser.TemplateFile, error) {
 	if t.Filepath == "" {
 		return t, nil
 	}
-	isTemplFile, fileName := convertTemplToGoURI(t.Filepath)
-	if !isTemplFile {
+	isTndrFile, fileName := convertTndrToGoURI(t.Filepath)
+	if !isTndrFile {
 		return t, fmt.Errorf("invalid filepath: %s", t.Filepath)
 	}
 

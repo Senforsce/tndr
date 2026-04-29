@@ -75,10 +75,10 @@ func getGoplsInfo() (d ToolInfo) {
 	return
 }
 
-func getTemplInfo() (d ToolInfo) {
+func getTndrInfo() (d ToolInfo) {
 	// Find tndr.
 	var err error
-	d.Location, err = findTempl()
+	d.Location, err = findTndr()
 	if err != nil {
 		d.Message = err.Error()
 		return
@@ -99,7 +99,7 @@ func getTemplInfo() (d ToolInfo) {
 	return
 }
 
-func findTempl() (location string, err error) {
+func findTndr() (location string, err error) {
 	executableName := "tndr"
 	if runtime.GOOS == "windows" {
 		executableName = "tndr.exe"
@@ -123,7 +123,7 @@ func getInfo() (d Info) {
 	d.OS.GOARCH = runtime.GOARCH
 	d.Go = getGoInfo()
 	d.Gopls = getGoplsInfo()
-	d.Tndr = getTemplInfo()
+	d.Tndr = getTndrInfo()
 	return
 }
 

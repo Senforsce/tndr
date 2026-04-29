@@ -1,10 +1,10 @@
 (function() {
-  let templ_reloadSrc = window.templ_reloadSrc || new EventSource("/_templ/reload/events");
-  templ_reloadSrc.onmessage = (event) => {
+  let tndr_reloadSrc = window.t1_reloadSrc || new EventSource("/_t1/reload/events");
+  tndr_reloadSrc.onmessage = (event) => {
     if (event && event.data === "reload") {
       window.location.reload();
     }
   };
-  window.templ_reloadSrc = templ_reloadSrc;
-  window.onbeforeunload = () => window.templ_reloadSrc.close();
+  window.t1_reloadSrc = tndr_reloadSrc;
+  window.onbeforeunload = () => window.t1_reloadSrc.close();
 })();

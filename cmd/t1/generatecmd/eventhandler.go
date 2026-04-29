@@ -18,11 +18,11 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/senforsce/generator"
+	parser "github.com/senforsce/t1parsers"
 	"github.com/senforsce/tndr/cmd/t1/visualize"
-	"github.com/senforsce/tndr/generator"
 	"github.com/senforsce/tndr/internal/syncmap"
 	"github.com/senforsce/tndr/internal/syncset"
-	"github.com/senforsce/tndr/parser/v2"
 	"github.com/senforsce/tndr/runtime"
 	"golang.org/x/sync/errgroup"
 )
@@ -210,7 +210,7 @@ func (h *FSEventHandler) generate(ctx context.Context, fileName string) (result 
 	formattedGoCode, err := format.Source(b.Bytes())
 	if err != nil {
 		err = remapErrorList(err, generatorOutput.SourceMap, fileName)
-		return GenerateResult{}, nil, fmt.Errorf("%s source formatting error %w", fileName, err)
+		return GenerateResult{}, nil, fmt.Errorf("%s source formatting error %w, %s", fileName, err, string(b.Bytes()))
 	}
 
 	// Hash output, and write out the file if the goCodeHash has changed.

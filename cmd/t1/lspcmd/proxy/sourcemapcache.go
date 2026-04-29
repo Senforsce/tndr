@@ -3,7 +3,7 @@ package proxy
 import (
 	"sync"
 
-	"github.com/senforsce/tndr/parser/v2"
+	parser "github.com/senforsce/t1parsers"
 )
 
 // NewSourceMapCache creates a cache of .t1 file URIs to the source map.

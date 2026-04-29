@@ -17,7 +17,7 @@ templ Example() {
 }
 ```
 
-`onClick` attributes, and other `on*` attributes are used to execute JavaScript. To prevent user data from being unescaped, `on*` attributes accept a `templ.ComponentScript`.
+`onClick` attributes, and other `on*` attributes are used to execute JavaScript. To prevent user data from being unescaped, `on*` attributes accept a `tndr.ComponentScript`.
 
 ```html
 script onClickHandler(msg string) {
@@ -26,7 +26,7 @@ script onClickHandler(msg string) {
 
 templ Example(msg string) {
   <div onClick={ onClickHandler(msg) }>
-    { "will be HTML encoded using templ.Escape" }
+    { "will be HTML encoded using tndr.Escape" }
   </div>
 }
 ```
@@ -39,11 +39,11 @@ templ Example() {
 }
 ```
 
-Class names are sanitized by default. A failed class name is replaced by `--templ-css-class-safe-name`. The sanitization can be bypassed using the `templ.SafeClass` function, but the result is still subject to escaping.
+Class names are sanitized by default. A failed class name is replaced by `--templ-css-class-safe-name`. The sanitization can be bypassed using the `tndr.SafeClass` function, but the result is still subject to escaping.
 
 ```html
 templ Example() {
-  <div class={ "unsafe</style&gt;-will-sanitized", templ.SafeClass("&sanitization bypassed") }></div>
+  <div class={ "unsafe</style&gt;-will-sanitized", tndr.SafeClass("&sanitization bypassed") }></div>
 }
 ```
 
@@ -56,17 +56,17 @@ Rendered output:
 ```html
 templ Example() {
   <div>Node text is not modified at all.</div>
-  <div>{ "will be escaped using templ.EscapeString" }</div>
+  <div>{ "will be escaped using tndr.EscapeString" }</div>
 }
 ```
 
-`href` attributes must be a `templ.SafeURL` and are sanitized to remove JavaScript URLs unless bypassed.
+`href` attributes must be a `tndr.SafeURL` and are sanitized to remove JavaScript URLs unless bypassed.
 
 ```html
 templ Example() {
   <a href="http://constants.example.com/are/not/sanitized">Text</a>
-  <a href={ templ.URL("will be sanitized by templ.URL to remove potential attacks") }</a>
-  <a href={ templ.SafeURL("will not be sanitized by templ.URL") }</a>
+  <a href={ tndr.URL("will be sanitized by tndr.URL to remove potential attacks") }</a>
+  <a href={ tndr.SafeURL("will not be sanitized by tndr.URL") }</a>
 }
 ```
 
@@ -78,7 +78,7 @@ css className() {
 }
 ```
 
-CSS property values based on expressions are passed through `templ.SanitizeCSS` to replace potentially unsafe values with placeholders.
+CSS property values based on expressions are passed through `tndr.SanitizeCSS` to replace potentially unsafe values with placeholders.
 
 ```css
 css className() {

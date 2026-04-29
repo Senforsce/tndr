@@ -15,7 +15,7 @@ These tests use the `goquery` library to parse HTML and check that expected elem
 
 ### Testing components
 
-The test sets up a pipe to write templ's HTML output to, and reads the output from the pipe, parsing it with `goquery`.
+The test sets up a pipe to write tndr's HTML output to, and reads the output from the pipe, parsing it with `goquery`.
 
 First, we test the page header. To use `goquery` to inspect the output, we’ll need to connect the header component’s `Render` method to the `goquery.NewDocumentFromReader` function with an `io.Pipe`.
 

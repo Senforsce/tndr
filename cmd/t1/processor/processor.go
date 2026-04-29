@@ -36,7 +36,7 @@ func FindTemplates(srcPath string, output chan<- string) (err error) {
 		if info.IsDir() && skipdir.ShouldSkip(currentPath) {
 			return filepath.SkipDir
 		}
-		if !info.IsDir() && strings.HasSuffix(currentPath, ".templ") {
+		if !info.IsDir() && strings.HasSuffix(currentPath, ".t1") {
 			output <- currentPath
 		}
 		return nil

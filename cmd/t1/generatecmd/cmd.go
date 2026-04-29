@@ -22,12 +22,12 @@ import (
 	"github.com/cenkalti/backoff/v4"
 	"github.com/cli/browser"
 	"github.com/fsnotify/fsnotify"
+	"github.com/senforsce/generator"
 	tndr "github.com/senforsce/tndr"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd/modcheck"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd/proxy"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd/run"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd/watcher"
-	"github.com/senforsce/tndr/generator"
 )
 
 func NewGenerate(log *slog.Logger, args Arguments) (g *Generate, err error) {

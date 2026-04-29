@@ -13,8 +13,8 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/google/go-cmp/cmp"
+	"github.com/senforsce/generator"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd"
-	"github.com/senforsce/tndr/generator"
 )
 
 // extractErrorList unwraps errors until it finds a scanner.ErrorList
@@ -30,26 +30,43 @@ func extractErrorList(err error) (scanner.ErrorList, bool) {
 	return extractErrorList(errors.Unwrap(err))
 }
 
+type MessageAndPosition struct {
+	Position token.Position
+	Msg      string
+}
+
 func TestErrorLocationMapping(t *testing.T) {
 	tests := []struct {
 		name           string
 		rawFileName    string
-		errorPositions []token.Position
+		errorPositions []MessageAndPosition
 	}{
 		{
 			name:        "single error outputs location in srcFile",
 			rawFileName: "single_error.t1.error",
-			errorPositions: []token.Position{
-				{Offset: 43, Line: 3, Column: 17},
+			errorPositions: []MessageAndPosition{
+				{
+					Position: token.Position{Offset: 43, Line: 3, Column: 17},
+					Msg:      "missing ',' in parameter list",
+				},
 			},
 		},
 		{
 			name:        "multiple errors all output locations in srcFile",
 			rawFileName: "multiple_errors.t1.error",
-			errorPositions: []token.Position{
-				{Offset: 41, Line: 3, Column: 15},
-				{Offset: 98, Line: 7, Column: 19},
-				{Offset: 126, Line: 10, Column: 1},
+			errorPositions: []MessageAndPosition{
+				{
+					Position: token.Position{Offset: 41, Line: 3, Column: 15},
+					Msg:      "missing ',' in parameter list",
+				},
+				{
+					Position: token.Position{Offset: 98, Line: 7, Column: 19},
+					Msg:      "missing ',' in parameter list",
+				},
+				{
+					Position: token.Position{Offset: 122, Line: 10, Column: 0},
+					Msg:      "illegal character U+00A7 '§'",
+				},
 			},
 		},
 	}
@@ -107,20 +124,26 @@ func TestErrorLocationMapping(t *testing.T) {
 			if len(list) != len(test.errorPositions) {
 				for i, err := range list {
 					expected := test.errorPositions[i]
-					expected.Filename = tempFileName
+					expected.Position.Filename = tempFileName
+					t.Errorf("Expected Filename=%s", tempFileName)
+					t.Errorf("sen:Error: %s ::Offset=%d -> Line=%d -> Column=%d", err.Msg, err.Pos.Offset, err.Pos.Line, err.Pos.Column)
 
-					if diff := cmp.Diff(expected, err.Pos); diff != "" {
+					if diff := cmp.Diff(expected.Position, err.Pos); diff != "" {
 						t.Errorf("Error position mismatch (-expected +actual):\n%s", diff)
 					}
+				}
+				for _, msgAndPosition := range test.errorPositions {
+					t.Errorf("sen:Error: Offset=%d -> Line=%d -> Column=%d", msgAndPosition.Position.Offset, msgAndPosition.Position.Line, msgAndPosition.Position.Column)
+
 				}
 				t.Fatalf("Expected %d errors but got %d", len(test.errorPositions), len(list))
 			}
 
 			for i, err := range list {
 				expected := test.errorPositions[i]
-				expected.Filename = tempFileName
+				expected.Position.Filename = tempFileName
 
-				if diff := cmp.Diff(expected, err.Pos); diff != "" {
+				if diff := cmp.Diff(expected.Position, err.Pos); diff != "" {
 					t.Errorf("Error position mismatch (-expected +actual):\n%s", diff)
 				}
 			}

@@ -8,12 +8,12 @@ import (
 	"strings"
 	"testing"
 
-	templ "github.com/senforsce/tndr"
+	"github.com/senforsce/tndr"
 	"github.com/senforsce/tndr/internal/htmlfind"
 	"golang.org/x/net/html"
 )
 
-var contentTemplate = templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+var contentTemplate = tndr.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 	_, err := io.WriteString(w, "content")
 	return err
 })

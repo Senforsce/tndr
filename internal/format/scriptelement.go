@@ -3,11 +3,11 @@ package format
 import (
 	"strings"
 
+	parser "github.com/senforsce/t1parsers"
 	"github.com/senforsce/tndr/internal/prettier"
-	"github.com/senforsce/tndr/parser/v2"
 )
 
-const templScriptPlaceholder = "templ_go_expression_7331"
+const tndrScriptPlaceholder = "tndr_go_expression_7331"
 
 // ScriptElement formats a ScriptElement node, replacing Go expressions with placeholders for formatting.
 // After formatting, it updates the GoCode expressions and their ranges.
@@ -28,7 +28,7 @@ func ScriptElement(se *parser.ScriptElement, depth int, prettierCommand string) 
 			continue
 		}
 		if part.GoCode != nil {
-			scriptWithPlaceholders.WriteString(templScriptPlaceholder)
+			scriptWithPlaceholders.WriteString(tndrScriptPlaceholder)
 			placeholderContent = append(placeholderContent, part)
 			continue
 		}
@@ -67,7 +67,7 @@ loop:
 		return nil
 	}
 
-	split := strings.Split(after, templScriptPlaceholder)
+	split := strings.Split(after, tndrScriptPlaceholder)
 	var appliedPlaceholderCount int
 	var newContents []parser.ScriptContents
 	for _, part := range split {

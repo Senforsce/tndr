@@ -52,7 +52,7 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.Handle("/", templ.Handler(page()))
+	mux.Handle("/", tndr.Handler(page()))
 
 	withLanguageMiddleware := newLanguageMiddleware(mux)
 

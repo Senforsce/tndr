@@ -4,7 +4,7 @@ tndr Components are markup and code that is compiled into functions that return 
 
 Components can contain tndr elements that render HTML, text, expressions that output text or include other templates, and branching statements such as `if` and `switch`, and `for` loops.
 
-```tndr title="header.templ"
+```tndr title="header.t1"
 package main
 
 t1 headerTemplate(name string) {
@@ -40,7 +40,7 @@ A `tndr.Component` may write partial output to the `io.Writer` if it returns an 
 
 ## Code-only components
 
-Since tndr Components ultimately implement the `tndr.Component` interface, any code that implements the interface can be used in place of a tndr component generated from a `*.templ` file.
+Since tndr Components ultimately implement the `tndr.Component` interface, any code that implements the interface can be used in place of a tndr component generated from a `*.t1` file.
 
 ```go
 package main

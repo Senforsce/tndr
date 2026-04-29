@@ -192,7 +192,7 @@ These tests contribute towards the code coverage metrics by building an instrume
 
 The command line interface for t1 is used to generate Go code from t1 files, format t1 files, and run the LSP.
 
-The code for this is at `./cmd/templ`.
+The code for this is at `./cmd/t1`.
 
 Testing of the t1 command line is done with unit tests to check the argument parsing.
 

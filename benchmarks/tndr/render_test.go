@@ -9,7 +9,7 @@ import (
 
 	_ "embed"
 
-	"github.com/senforsce/tndr/parser/v2"
+	parser "github.com/senforsce/t1parsers"
 )
 
 func BenchmarkTemplRender(b *testing.B) {
@@ -29,7 +29,7 @@ func BenchmarkTemplRender(b *testing.B) {
 	}
 }
 
-//go:embed template.templ
+//go:embed template.t1
 var parserBenchmarkTemplate string
 
 func BenchmarkTemplParser(b *testing.B) {

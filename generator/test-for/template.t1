@@ -1,7 +1,0 @@
-package testfor
-
-t1 render(items []string) {
-	for _, item := range items {
-		<div>{ item }</div>
-	}
-}

@@ -166,7 +166,7 @@ t1 Show() {
 }
 
 func main() {
-  h := templ.Handler(Page())
+  h := tndr.Handler(Page())
   withMiddleware := Middleware(h)
   http.Handle("/", withMiddleware)
   http.ListenAndServe(":8080", nil)

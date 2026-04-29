@@ -10,7 +10,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
+func TestTndrPkgTraverserOpenTopologically(t *testing.T) {
 	tests := []struct {
 		name             string
 		traverser        *goPkgTraverser
@@ -26,44 +26,44 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 				fileReader: mockFileReader{error: assert.AnError},
 			},
 			pkg: &packages.Package{
-				OtherFiles: []string{"/foo.go", "/foo.templ"},
+				OtherFiles: []string{"/foo.go", "/foo.t1"},
 			},
-			wantErrContains: "read file \"/foo.templ\"",
+			wantErrContains: "read file \"/foo.t1\"",
 		},
 		{
 			name: "did open failed",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					openedDocs: map[string]int{},
 					error:      assert.AnError,
 				},
 			},
 			pkg: &packages.Package{
-				OtherFiles: []string{"/foo.go", "/foo.templ"},
+				OtherFiles: []string{"/foo.go", "/foo.t1"},
 			},
-			wantErrContains: "did open file \"/foo.templ\"",
+			wantErrContains: "did open file \"/foo.t1\"",
 		},
 		{
 			name: "open a->b->c",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					openedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{},
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ", "/a.go"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1", "/a.go"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -75,18 +75,18 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 				"c": 1,
 			},
 			wantOpenedDocs: map[string]int{
-				"/c.templ":       1,
-				"/c_other.templ": 1,
-				"/b.templ":       1,
-				"/a.templ":       1,
-				"/a_other.templ": 1,
+				"/c.t1":       1,
+				"/c_other.t1": 1,
+				"/b.t1":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
 			},
 		},
 		{
 			name: "open a->b->c with c already open",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					openedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -95,15 +95,15 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -115,41 +115,41 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 				"c": 2,
 			},
 			wantOpenedDocs: map[string]int{
-				"/b.templ":       1,
-				"/a.templ":       1,
-				"/a_other.templ": 1,
+				"/b.t1":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
 			},
 		},
 		{
 			name: "open a->b->c a->d->c",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					openedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{},
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
 					"d": {
 						PkgPath:    "d",
-						OtherFiles: []string{"/d.templ"},
+						OtherFiles: []string{"/d.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -162,19 +162,19 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 				"d": 1,
 			},
 			wantOpenedDocs: map[string]int{
-				"/d.templ":       1,
-				"/c.templ":       1,
-				"/c_other.templ": 1,
-				"/b.templ":       1,
-				"/a.templ":       1,
-				"/a_other.templ": 1,
+				"/d.t1":       1,
+				"/c.t1":       1,
+				"/c_other.t1": 1,
+				"/b.t1":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
 			},
 		},
 		{
 			name: "open a->b->c a->d->c with d open",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					openedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -184,25 +184,25 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
 					"d": {
 						PkgPath:    "d",
-						OtherFiles: []string{"/d.templ"},
+						OtherFiles: []string{"/d.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -215,16 +215,16 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 				"d": 2,
 			},
 			wantOpenedDocs: map[string]int{
-				"/b.templ":       1,
-				"/a.templ":       1,
-				"/a_other.templ": 1,
+				"/b.t1":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
 			},
 		},
 		{
 			name: "open a->b->c a->d->c with a open",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					openedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -236,25 +236,25 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
 					"d": {
 						PkgPath:    "d",
-						OtherFiles: []string{"/d.templ"},
+						OtherFiles: []string{"/d.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -272,7 +272,7 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 			name: "open a->b->c a->d->c c->e with c open",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					openedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -282,19 +282,19 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 								Imports: map[string]*packages.Package{
 									"e": {
 										PkgPath:    "e",
-										OtherFiles: []string{"/e.templ"},
+										OtherFiles: []string{"/e.t1"},
 									},
 								},
 							},
@@ -302,15 +302,15 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 					},
 					"d": {
 						PkgPath:    "d",
-						OtherFiles: []string{"/d.templ"},
+						OtherFiles: []string{"/d.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 								Imports: map[string]*packages.Package{
 									"e": {
 										PkgPath:    "e",
-										OtherFiles: []string{"/e.templ"},
+										OtherFiles: []string{"/e.t1"},
 									},
 								},
 							},
@@ -326,10 +326,10 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 				"e": 1,
 			},
 			wantOpenedDocs: map[string]int{
-				"/d.templ":       1,
-				"/b.templ":       1,
-				"/a.templ":       1,
-				"/a_other.templ": 1,
+				"/d.t1":       1,
+				"/b.t1":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
 			},
 		},
 	}
@@ -344,7 +344,7 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 
-				handler, ok := tt.traverser.templDocHandler.(*mockTemplDocHandler)
+				handler, ok := tt.traverser.tndrDocHandler.(*mockTndrDocHandler)
 				require.True(t, ok)
 				assert.Equal(t, tt.wantOpenedDocs, handler.openedDocs)
 			}
@@ -352,7 +352,7 @@ func TestTemplPkgTraverserOpenTopologically(t *testing.T) {
 	}
 }
 
-func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
+func TestTndrPkgTraverserCloseTopologically(t *testing.T) {
 	tests := []struct {
 		name             string
 		traverser        *goPkgTraverser
@@ -365,7 +365,7 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			name: "did close failed",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					closedDocs: map[string]int{},
 					error:      assert.AnError,
 				},
@@ -373,15 +373,15 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "foo",
-				OtherFiles: []string{"/foo.go", "/foo.templ"},
+				OtherFiles: []string{"/foo.go", "/foo.t1"},
 			},
-			wantErrContains: "did close file \"/foo.templ\"",
+			wantErrContains: "did close file \"/foo.t1\"",
 		},
 		{
 			name: "close a->b->c",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					closedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -390,15 +390,15 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ", "/a.go"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1", "/a.go"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -406,18 +406,18 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			wantPkgsRefCount: map[string]int{},
 			wantClosedDocs: map[string]int{
-				"/c.templ":       1,
-				"/c_other.templ": 1,
-				"/b.templ":       1,
-				"/a.templ":       1,
-				"/a_other.templ": 1,
+				"/c.t1":       1,
+				"/c_other.t1": 1,
+				"/b.t1":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
 			},
 		},
 		{
 			name: "close a->b->c with c open",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					closedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -426,15 +426,15 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -442,16 +442,16 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			wantPkgsRefCount: map[string]int{"c": 1},
 			wantClosedDocs: map[string]int{
-				"/b.templ":       1,
-				"/a.templ":       1,
-				"/a_other.templ": 1,
+				"/b.t1":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
 			},
 		},
 		{
 			name: "close a->b->c a->d->c",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					closedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -460,25 +460,25 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
 					"d": {
 						PkgPath:    "d",
-						OtherFiles: []string{"/d.templ"},
+						OtherFiles: []string{"/d.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -486,19 +486,19 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			wantPkgsRefCount: map[string]int{},
 			wantClosedDocs: map[string]int{
-				"/d.templ":       1,
-				"/b.templ":       1,
-				"/a.templ":       1,
-				"/a_other.templ": 1,
-				"/c.templ":       1,
-				"/c_other.templ": 1,
+				"/d.t1":       1,
+				"/b.t1":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
+				"/c.t1":       1,
+				"/c_other.t1": 1,
 			},
 		},
 		{
 			name: "close a->b->c a->d->c with d open",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					closedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -510,25 +510,25 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
 					"d": {
 						PkgPath:    "d",
-						OtherFiles: []string{"/d.templ"},
+						OtherFiles: []string{"/d.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -539,16 +539,16 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 				"d": 1,
 			},
 			wantClosedDocs: map[string]int{
-				"/a.templ":       1,
-				"/a_other.templ": 1,
-				"/b.templ":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
+				"/b.t1":       1,
 			},
 		},
 		{
 			name: "close a->b->c a->d->c with a open",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					closedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -560,25 +560,25 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
 					"d": {
 						PkgPath:    "d",
-						OtherFiles: []string{"/d.templ"},
+						OtherFiles: []string{"/d.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 							},
 						},
 					},
@@ -596,7 +596,7 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			name: "close a->b->c a->d->c c->e with c open twice",
 			traverser: &goPkgTraverser{
 				fileReader: mockFileReader{error: nil},
-				templDocHandler: &mockTemplDocHandler{
+				tndrDocHandler: &mockTndrDocHandler{
 					closedDocs: map[string]int{},
 				},
 				pkgsRefCount: map[string]int{
@@ -609,19 +609,19 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			},
 			pkg: &packages.Package{
 				PkgPath:    "a",
-				OtherFiles: []string{"/a.templ", "/a_other.templ"},
+				OtherFiles: []string{"/a.t1", "/a_other.t1"},
 				Imports: map[string]*packages.Package{
 					"b": {
 						PkgPath:    "b",
-						OtherFiles: []string{"/b.templ"},
+						OtherFiles: []string{"/b.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 								Imports: map[string]*packages.Package{
 									"e": {
 										PkgPath:    "e",
-										OtherFiles: []string{"/e.templ"},
+										OtherFiles: []string{"/e.t1"},
 									},
 								},
 							},
@@ -629,15 +629,15 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 					},
 					"d": {
 						PkgPath:    "d",
-						OtherFiles: []string{"/d.templ"},
+						OtherFiles: []string{"/d.t1"},
 						Imports: map[string]*packages.Package{
 							"c": {
 								PkgPath:    "c",
-								OtherFiles: []string{"/c.templ", "/c_other.templ"},
+								OtherFiles: []string{"/c.t1", "/c_other.t1"},
 								Imports: map[string]*packages.Package{
 									"e": {
 										PkgPath:    "e",
-										OtherFiles: []string{"/e.templ"},
+										OtherFiles: []string{"/e.t1"},
 									},
 								},
 							},
@@ -650,10 +650,10 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 				"e": 1,
 			},
 			wantClosedDocs: map[string]int{
-				"/a.templ":       1,
-				"/a_other.templ": 1,
-				"/b.templ":       1,
-				"/d.templ":       1,
+				"/a.t1":       1,
+				"/a_other.t1": 1,
+				"/b.t1":       1,
+				"/d.t1":       1,
 			},
 		},
 	}
@@ -669,7 +669,7 @@ func TestTemplPkgTraverserCloseTopologically(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 
-				handler, ok := tt.traverser.templDocHandler.(*mockTemplDocHandler)
+				handler, ok := tt.traverser.tndrDocHandler.(*mockTndrDocHandler)
 				require.True(t, ok)
 				assert.Equal(t, tt.wantClosedDocs, handler.closedDocs)
 				assert.Equal(t, tt.wantPkgsRefCount, tt.traverser.pkgsRefCount)
@@ -687,18 +687,18 @@ func (r mockFileReader) read(_ string) ([]byte, error) {
 	return r.bytes, r.error
 }
 
-type mockTemplDocHandler struct {
+type mockTndrDocHandler struct {
 	openedDocs map[string]int
 	closedDocs map[string]int
 	error      error
 }
 
-func (h *mockTemplDocHandler) HandleDidOpen(_ context.Context, params *lsp.DidOpenTextDocumentParams) error {
+func (h *mockTndrDocHandler) HandleDidOpen(_ context.Context, params *lsp.DidOpenTextDocumentParams) error {
 	h.openedDocs[params.TextDocument.URI.Filename()]++
 	return h.error
 }
 
-func (h *mockTemplDocHandler) HandleDidClose(_ context.Context, params *lsp.DidCloseTextDocumentParams) error {
+func (h *mockTndrDocHandler) HandleDidClose(_ context.Context, params *lsp.DidCloseTextDocumentParams) error {
 	h.closedDocs[params.TextDocument.URI.Filename()]++
 	return h.error
 }

@@ -217,11 +217,11 @@ func (sh *Storybook) installStorybook() (err error) {
 	if os.IsNotExist(err) {
 		err = os.Mkdir(sh.Path, os.ModePerm)
 		if err != nil {
-			return fmt.Errorf("templ-storybook: error creating @storybook/server directory: %w", err)
+			return fmt.Errorf("tndr-storybook: error creating @storybook/server directory: %w", err)
 		}
 		err = os.WriteFile(filepath.Join(sh.Path, "package.json"), []byte(packageJSON), 0644)
 		if err != nil {
-			return fmt.Errorf("templ-storybook: error writing package.json: %w", err)
+			return fmt.Errorf("tndr-storybook: error writing package.json: %w", err)
 		}
 	}
 	var cmd exec.Cmd
@@ -230,14 +230,14 @@ func (sh *Storybook) installStorybook() (err error) {
 	cmd.Stderr = os.Stderr
 	cmd.Path, err = exec.LookPath("npx")
 	if err != nil {
-		return fmt.Errorf("templ-storybook: cannot install storybook, cannot find npx on the path, check that Node.js is installed: %w", err)
+		return fmt.Errorf("tndr-storybook: cannot install storybook, cannot find npx on the path, check that Node.js is installed: %w", err)
 	}
 	cmd.Args = []string{"npx", "sb", "init", "--features", "docs", "test", "-t", "server", "--no-dev"}
 	return cmd.Run()
 }
 
 func (sh *Storybook) configureStorybook() (configHasChanged bool, err error) {
-	// Delete template/existing files in the stories directory.
+	// Delete tndrate/existing files in the stories directory.
 	storiesDir := filepath.Join(sh.Path, "stories")
 	before, err := dirhash.HashDir(storiesDir, "/", dirhash.DefaultHash)
 	if err != nil && !os.IsNotExist(err) {
@@ -299,7 +299,7 @@ func (sh *Storybook) buildStorybook() (err error) {
 	cmd.Stderr = os.Stderr
 	cmd.Path, err = exec.LookPath("npm")
 	if err != nil {
-		return fmt.Errorf("templ-storybook: cannot run storybook, cannot find npm on the path, check that Node.js is installed: %w", err)
+		return fmt.Errorf("tndr-storybook: cannot run storybook, cannot find npm on the path, check that Node.js is installed: %w", err)
 	}
 	cmd.Args = []string{"npm", "run", "build-storybook"}
 	return cmd.Run()
@@ -312,7 +312,7 @@ func NewHandler(name string, f any, args ...Arg) http.Handler {
 		for i, arg := range args {
 			argv[i] = arg.Get(q)
 		}
-		component, err := executeTemplate(name, f, argv)
+		component, err := executetndrate(name, f, argv)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -321,12 +321,12 @@ func NewHandler(name string, f any, args ...Arg) http.Handler {
 	})
 }
 
-func executeTemplate(name string, fn any, values []any) (output tndr.Component, err error) {
+func executetndrate(name string, fn any, values []any) (output tndr.Component, err error) {
 	v := reflect.ValueOf(fn)
 	t := v.Type()
 	argv := make([]reflect.Value, t.NumIn())
 	if len(argv) != len(values) {
-		err = fmt.Errorf("templ-storybook: component %s expects %d argument, but %d were provided", fn, len(argv), len(values))
+		err = fmt.Errorf("tndr-storybook: component %s expects %d argument, but %d were provided", fn, len(argv), len(values))
 		return
 	}
 	for i := range argv {
@@ -334,12 +334,12 @@ func executeTemplate(name string, fn any, values []any) (output tndr.Component, 
 	}
 	result := v.Call(argv)
 	if len(result) != 1 {
-		err = fmt.Errorf("templ-storybook: function %s must return a tndr.Component", name)
+		err = fmt.Errorf("tndr-storybook: function %s must return a tndr.Component", name)
 		return
 	}
 	output, ok := result[0].Interface().(tndr.Component)
 	if !ok {
-		err = fmt.Errorf("templ-storybook: result of function %s is not a tndr.Component", name)
+		err = fmt.Errorf("tndr-storybook: result of function %s is not a tndr.Component", name)
 		return
 	}
 	return output, nil

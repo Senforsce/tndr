@@ -1,8 +1,8 @@
 # urlbuilder
 
-A simple URL builder to construct a `templ.SafeURL`.
+A simple URL builder to construct a `tndr.SafeURL`.
 
-```templ title="component.templ"
+```templ title="component.t1"
 import (
   "github.com/templ-go/x/urlbuilder"
   "strconv"

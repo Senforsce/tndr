@@ -36,7 +36,7 @@ func Run(log *slog.Logger, stdin io.Reader, stdout io.Writer, args Arguments) (e
 		if err != nil {
 			return fmt.Errorf("failed to read from stdin: %w", err)
 		}
-		formatted, _, err := format.Templ(src, args.StdinFilepath, formatterConfig)
+		formatted, _, err := format.Tndr(src, args.StdinFilepath, formatterConfig)
 		if err != nil {
 			return fmt.Errorf("failed to format stdin: %w", err)
 		}
@@ -51,7 +51,7 @@ func Run(log *slog.Logger, stdin io.Reader, stdout io.Writer, args Arguments) (e
 		if err != nil {
 			return fmt.Errorf("failed to read file %q: %w", fileName, err), false
 		}
-		formatted, changed, err := format.Templ(src, fileName, formatterConfig)
+		formatted, changed, err := format.Tndr(src, fileName, formatterConfig)
 		if err != nil {
 			return fmt.Errorf("failed to format file %q: %w", fileName, err), false
 		}

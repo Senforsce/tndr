@@ -2,7 +2,7 @@
 
 To provide AI coding assistants such as GitHub Copilot, Cursor or similar with help on how to write templ code, the templ project maintains a single file containing documentation for LLMs to read.
 
-You can find the file at `https://templ.guide/llms.md`.
+You can find the file at `https://tndr.guide/llms.md`.
 
 ## LLM tools
 
@@ -10,4 +10,4 @@ You can find the file at `https://templ.guide/llms.md`.
 
 CopilotChat is a plugin for Neovim that provides a chat interface for GitHub Copilot. It allows you to ask Copilot questions and get responses in real-time.
 
-Use the URL feature to load `https://templ.guide/llms.md`.
+Use the URL feature to load `https://tndr.guide/llms.md`.

@@ -11,12 +11,12 @@ import (
 	"syscall"
 
 	"github.com/fatih/color"
+	"github.com/senforsce/telemetry"
 	"github.com/senforsce/tndr"
 	"github.com/senforsce/tndr/cmd/t1/fmtcmd"
 	"github.com/senforsce/tndr/cmd/t1/generatecmd"
 	"github.com/senforsce/tndr/cmd/t1/infocmd"
 	"github.com/senforsce/tndr/cmd/t1/lspcmd"
-	"github.com/senforsce/tndr/cmd/t1/sloghandler"
 )
 
 func main() {
@@ -83,8 +83,8 @@ Args:
 func infoCmd(stdout, stderr io.Writer, args []string) (code int) {
 	cmd := flag.NewFlagSet("diagnose", flag.ExitOnError)
 	jsonFlag := cmd.Bool("json", false, "")
-	verboseFlag := cmd.Bool("v", false, "")
-	logLevelFlag := cmd.String("log-level", "info", "")
+	//verboseFlag := cmd.Bool("v", false, "")
+	//logLevelFlag := cmd.String("log-level", "info", "")
 	helpFlag := cmd.Bool("help", false, "")
 	err := cmd.Parse(args)
 	if err != nil {
@@ -95,10 +95,20 @@ func infoCmd(stdout, stderr io.Writer, args []string) (code int) {
 		_, _ = fmt.Fprint(stdout, infoUsageText)
 		return
 	}
-
-	log := sloghandler.NewLogger(*logLevelFlag, *verboseFlag, stderr)
-
 	ctx, cancel := context.WithCancel(context.Background())
+
+	logOptions := telemetry.SenforsceLoggerOptions{
+		Context:        ctx,
+		LogLevel:       "debug",
+		LoggerName:     "tndr",
+		ServiceName:    "info",
+		ServiceVersion: "0.1.0",
+		Verbose:        true,
+	}
+	tndrLogger, tndrLoggerProvider := telemetry.NewLogger(logOptions)
+
+	defer tndrLoggerProvider.Shutdown(ctx)
+
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
 	go func() {
@@ -107,7 +117,7 @@ func infoCmd(stdout, stderr io.Writer, args []string) (code int) {
 		cancel()
 	}()
 
-	err = infocmd.Run(ctx, log, stdout, infocmd.Arguments{
+	err = infocmd.Run(ctx, tndrLogger, stdout, infocmd.Arguments{
 		JSON: *jsonFlag,
 	})
 	if err != nil {
@@ -186,8 +196,8 @@ func fmtCmd(stdin io.Reader, stdout, stderr io.Writer, args []string) (code int)
 	cmd := flag.NewFlagSet("fmt", flag.ExitOnError)
 	helpFlag := cmd.Bool("help", false, "")
 	workerCountFlag := cmd.Int("w", runtime.NumCPU(), "")
-	verboseFlag := cmd.Bool("v", false, "")
-	logLevelFlag := cmd.String("log-level", "info", "")
+	//verboseFlag := cmd.Bool("v", false, "")
+	//logLevelFlag := cmd.String("log-level", "info", "")
 	failIfChanged := cmd.Bool("fail", false, "")
 	prettierCommand := cmd.String("prettier-command", "", "")
 	prettierRequired := cmd.Bool("prettier-required", false, "")
@@ -203,9 +213,20 @@ func fmtCmd(stdin io.Reader, stdout, stderr io.Writer, args []string) (code int)
 		return
 	}
 
-	log := sloghandler.NewLogger(*logLevelFlag, *verboseFlag, stderr)
+	tndrContext := context.Background()
+	logOptions := telemetry.SenforsceLoggerOptions{
+		Context:        tndrContext,
+		LogLevel:       "debug",
+		LoggerName:     "tndr",
+		ServiceName:    "fmt",
+		ServiceVersion: "0.1.0",
+		Verbose:        true,
+	}
+	tndrLogger, tndrLoggerProvider := telemetry.NewLogger(logOptions)
 
-	err = fmtcmd.Run(log, stdin, stdout, fmtcmd.Arguments{
+	defer tndrLoggerProvider.Shutdown(tndrContext)
+
+	err = fmtcmd.Run(tndrLogger, stdin, stdout, fmtcmd.Arguments{
 		ToStdout:         *stdoutFlag,
 		Files:            cmd.Args(),
 		WorkerCount:      *workerCountFlag,

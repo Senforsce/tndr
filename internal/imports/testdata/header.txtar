@@ -1,8 +1,8 @@
--- fmt_templ.t1 --
+-- fmt_tndr.t1 --
 package test
 
 var x = fmt.Sprintf("Hello")
--- fmt_templ.t1 --
+-- fmt_tndr.t1 --
 package test
 
 import "fmt"

@@ -81,7 +81,7 @@ Examples:
 
   Generate code for a single file:
 
-    t1 generate -f header.templ
+    t1 generate -f header.t1
 
   Watch the current directory and subdirectories for changes and regenerate code:
 

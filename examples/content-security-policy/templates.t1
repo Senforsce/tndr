@@ -1,9 +1,0 @@
-package main
-
-script sayHello() {
-	alert("Hello")
-}
-
-t1 template() {
-	@sayHello()
-}

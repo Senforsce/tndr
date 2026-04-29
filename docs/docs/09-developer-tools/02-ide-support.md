@@ -40,19 +40,20 @@ Tailwind language servers require a tailwind.config.js file to be present in the
 
 ### Emmet HTML completion
 
-Include the following to the settings.json in order to get smooth HTML completion via emmet (such as expanding `input:button<Tab>` to `<input type="button" value="">`). The emmet plugin is built into vscode and just needs to be activated for `.templ` files:
+Include the following to the settings.json in order to get smooth HTML completion via emmet (such as expanding `input:button<Tab>` to `<input type="button" value="">`). The emmet plugin is built into vscode and just needs to be activated for `.t1` files:
 
 ```json
 {
   "emmet.includeLanguages": {
-    "templ": "html"
+    "tndr": "html",
+    "t1": "html"
   }
 }
 ```
 
 ## Neovim &gt; 0.5.0
 
-A plugin written in VimScript which adds syntax highlighting: [joerdav/templ.vim](https://github.com/Joe-Davidson1802/templ.vim).
+A plugin written in VimScript which adds syntax highlighting: [joerdav/tndr.vim](https://github.com/Joe-Davidson1802/tndr.vim).
 
 For neovim you can use [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) and install [tree-sitter-templ](https://github.com/vrischmann/tree-sitter-templ) with `:TSInstall templ`.
 
@@ -80,13 +81,13 @@ end
 
 In Neovim, you can use the `:LspInfo` command to check which Language Servers (if any) are running. If the expected language server has not started, it could be due to the unregistered templ file extension. 
 
-To resolve this issue, add the following code to your configuration. This is also necessary for other LSPs to "pick up" on .templ files.
+To resolve this issue, add the following code to your configuration. This is also necessary for other LSPs to "pick up" on .t1 files.
 
 ```lua
 vim.filetype.add({ extension = { templ = "templ" } })
 ```
 
-##### Other LSPs within .templ files
+##### Other LSPs within .t1 files
 
 These LSPs can be used *in conjunction* with the templ lsp and tree-sitter. Here's how to set them up.
 
@@ -127,7 +128,7 @@ lspconfig.tailwindcss.setup({
 })
 ```
 
-Inside of your `tailwind.config.js`, you need to tell tailwind to look inside of .templ files and/or .go files.
+Inside of your `tailwind.config.js`, you need to tell tailwind to look inside of .t1 files and/or .go files.
 
 :::tip
 If you don't have a `tailwind.config.js` in the root directory of your project, the Tailwind LSP won't activate, and you won't see autocompletion results.
@@ -135,7 +136,7 @@ If you don't have a `tailwind.config.js` in the root directory of your project, 
 
 ```js
 module.exports = {
-    content: [ "./**/*.html", "./**/*.templ", "./**/*.go", ],
+    content: [ "./**/*.html", "./**/*.t1", "./**/*.go", ],
     theme: { extend: {}, },
     plugins: [],
 }
@@ -146,7 +147,7 @@ module.exports = {
 With the templ LSP installed and configured, you can use the following code snippet to format on save:
 
 ```lua
-vim.api.nvim_create_autocmd({ "BufWritePre" }, { pattern = { "*.templ" }, callback = vim.lsp.buf.format })
+vim.api.nvim_create_autocmd({ "BufWritePre" }, { pattern = { "*.t1" }, callback = vim.lsp.buf.format })
 ```
 `BufWritePre` means that the callback gets ran after you call `:write`.
 
@@ -188,10 +189,10 @@ end
 To make this `custom_format` run on save, make the same autocmd from before and replace the callback with `custom_format`. 
 
 ```lua
-vim.api.nvim_create_autocmd({ "BufWritePre" }, { pattern = { "*.templ" }, callback = custom_format })
+vim.api.nvim_create_autocmd({ "BufWritePre" }, { pattern = { "*.t1" }, callback = custom_format })
 ```
 
-You can also rewrite the function like so, given that the function will only be executed on .templ files.
+You can also rewrite the function like so, given that the function will only be executed on .t1 files.
 
 ```lua
 local templ_format = function()
@@ -220,10 +221,10 @@ If you don't have `prettierd`, `prettier` or `npx` on your path, formatting will
 
 If you cannot run `:TSInstall templ`, ensure you have an up-to-date version of [tree-sitter](https://github.com/nvim-treesitter/nvim-treesitter). The [package for templ](https://github.com/vrischmann/tree-sitter-templ) was [added to the main tree-sitter repository](https://github.com/nvim-treesitter/nvim-treesitter/pull/5667) so you shouldn't need to install a separate plugin for it.
 
-If you still don't get syntax highlighting after it's installed, try running `:TSBufEnable highlight`. If you find that you need to do this every time you open a .templ file, you can run this autocmd to do it for your neovim configuration.
+If you still don't get syntax highlighting after it's installed, try running `:TSBufEnable highlight`. If you find that you need to do this every time you open a .t1 file, you can run this autocmd to do it for your neovim configuration.
 
 ```lua
-vim.api.nvim_create_autocmd("BufEnter", { pattern = "*.templ", callback = function() vim.cmd("TSBufEnable highlight") end }) 
+vim.api.nvim_create_autocmd("BufEnter", { pattern = "*.t1", callback = function() vim.cmd("TSBufEnable highlight") end }) 
 ```
 
 ### Minimal Config
@@ -284,7 +285,7 @@ vim.filetype.add({ extension = { templ = "templ" } })
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 local lspconfig = require("lspconfig")
 
-lspconfig.templ.setup{
+lspconfig.t1.setup{
   on_attach = on_attach,
   capabilities = capabilities,
 }
@@ -372,7 +373,7 @@ function! s:on_lsp_buffer_enabled() abort
   nmap <buffer> K <plug>(lsp-hover)
 
   let g:lsp_format_sync_timeout = 1000
-  autocmd! BufWritePre *.templ call execute('LspDocumentFormatSync')
+  autocmd! BufWritePre *.t1 call execute('LspDocumentFormatSync')
 endfunction
 
 augroup lsp_install
@@ -404,11 +405,11 @@ autocmd FileType templ call deoplete#custom#buffer_option('auto_complete', v:fal
 _Optional_: If you'd like indentation to better match Go outside of `templ` blocks, install:
 
 ```
-Plug 'iefserge/templ.vim'
+Plug 'iefserge/tndr.vim'
 ```
 
 * This plugin also adds [tcomment_vim](https://github.com/tomtom/tcomment_vim) support.
-* This is a fork of [joerdav/templ.vim](https://github.com/Joe-Davidson1802/templ.vim).
+* This is a fork of [joerdav/tndr.vim](https://github.com/Joe-Davidson1802/tndr.vim).
 
 ## Helix
 
@@ -462,11 +463,11 @@ For VS Code, use the "Preferences: Open User Settings (JSON)" command in VS Code
 ```js
 {
     // More settings...
-    "templ.log": "/Users/adrian/templ.log",
-    "templ.goplsLog": "/Users/adrian/gopls.log",
-    "templ.http": "localhost:7575",
-    "templ.goplsRPCTrace": true,
-    "templ.pprof": false,
+    "tndr.log": "/Users/adrian/tndr.log",
+    "tndr.goplsLog": "/Users/adrian/gopls.log",
+    "tndr.http": "localhost:7575",
+    "tndr.goplsRPCTrace": true,
+    "tndr.pprof": false,
     // More stuff...
 }
 ```
@@ -475,9 +476,9 @@ For Neovim, configure the LSP command to add the additional command line options
 
 ```lua
 local configs = require('lspconfig.configs')
-configs.templ = {
+configs.t1 = {
   default_config = {
-    cmd = { "templ", "lsp", "-http=localhost:7474", "-log=/Users/adrian/templ.log" },
+    cmd = { "templ", "lsp", "-http=localhost:7474", "-log=/Users/adrian/tndr.log" },
     filetypes = { 'templ' },
     root_dir = nvim_lsp.util.root_pattern("go.mod", ".git"),
     settings = {},
@@ -485,7 +486,7 @@ configs.templ = {
 }
 ```
 
-For IntelliJ, configure the plugin settings `.idea/templ.xml`.
+For IntelliJ, configure the plugin settings `.idea/tndr.xml`.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -494,7 +495,7 @@ For IntelliJ, configure the plugin settings `.idea/templ.xml`.
     <option name="goplsLog" value="$USER_HOME$/gopls.log" />
     <option name="goplsRPCTrace" value="true" />
     <option name="http" value="localhost:7575" />
-    <option name="log" value="$USER_HOME$/templ.log" />
+    <option name="log" value="$USER_HOME$/tndr.log" />
   </component>
 </project>
 ```

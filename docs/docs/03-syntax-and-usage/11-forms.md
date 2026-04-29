@@ -90,11 +90,11 @@ t1 View(m Model) {
   </ul>
   <form id="form" method="post" hx-boost="true">
     @csrf.CSRF()
-    <div id="name-group" class={ "form-group", templ.KV("has-error", m.NameHasError()) }>
+    <div id="name-group" class={ "form-group", tndr.KV("has-error", m.NameHasError()) }>
       <label for="name">Name</label>
       <input type="text" id="name" name="name" class="form-control" placeholder="Name" value={ m.Name }/>
     </div>
-    <div id="email-group" class={ "form-group", templ.KV("has-error", m.EmailHasError()) }>
+    <div id="email-group" class={ "form-group", tndr.KV("has-error", m.EmailHasError()) }>
       <label for="email">Email</label>
       <input type="email" id="email" name="email" class="form-control" placeholder="Email" value={ m.Email }/>
     </div>
@@ -322,7 +322,7 @@ The view is a simple table containing a bit of logic to display "No contacts" if
 
 It's common to break down a page into smaller components, so the `ContactsList` component is used to display the list of contacts, and is called from the `View` template.
 
-```tndr title="routes/contacts/view.templ"
+```tndr title="routes/contacts/view.t1"
 t1 View(contacts []db.Contact) {
   <h1>Contacts</h1>
   <ul>
@@ -373,10 +373,10 @@ The `layout` package provides a common structure for all pages, including links 
 
 The `content` component passed into the `Page` template is replaced with the specific content for each page. Multiple function arguments or structs can be passed to the `Page` template to enable multiple slots for content.
 
-```tndr title="layout/page.templ"
+```tndr title="layout/page.t1"
 package layout
 
-t1 Page(content templ.Component) {
+t1 Page(content tndr.Component) {
   <!DOCTYPE html>
   <html>
     <head>
@@ -393,8 +393,8 @@ t1 Page(content templ.Component) {
 A small helper function wraps the `Page` template to create an HTTP handler that can be used in routes.
 
 ```go title="layout/layout.go"
-func Handler(content templ.Component) http.Handler {
-  return templ.Handler(Page(content))
+func Handler(content tndr.Component) http.Handler {
+  return tndr.Handler(Page(content))
 }
 ```
 
@@ -553,9 +553,9 @@ func (m *Model) Validate() (msgs []string) {
 }
 ```
 
-The view for the contact form is defined in `view.templ`, which uses tndr to render the form fields and any validation errors.
+The view for the contact form is defined in `view.t1`, which uses tndr to render the form fields and any validation errors.
 
-```tndr title=./routes/contact/sedit/view.templ
+```tndr title=./routes/contact/sedit/view.t1
 package contactsedit
 
 t1 View(m Model) {
@@ -564,11 +564,11 @@ t1 View(m Model) {
     <li><a href="/contacts" hx-boost="true">Back to Contacts</a></li>
   </ul>
   <form id="form" method="post" hx-boost="true">
-    <div id="name-group" class={ "form-group", templ.KV("has-error", m.NameHasError()) }>
+    <div id="name-group" class={ "form-group", tndr.KV("has-error", m.NameHasError()) }>
       <label for="name">Name</label>
       <input type="text" id="name" name="name" class="form-control" placeholder="Name" value={ m.Name }/>
     </div>
-    <div id="email-group" class={ "form-group", templ.KV("has-error", m.EmailHasError()) }>
+    <div id="email-group" class={ "form-group", tndr.KV("has-error", m.EmailHasError()) }>
       <label for="email">Email</label>
       <input type="email" id="email" name="email" class="form-control" placeholder="Email" value={ m.Email }/>
     </div>
@@ -682,7 +682,7 @@ func (h *Handler) Post(w http.ResponseWriter, r *http.Request) {
 
 The view for the delete confirmation is straightforward, displaying the contact's name and asking for confirmation before deletion.
 
-```tndr title=./routes/contactsdelete/view.templ
+```tndr title=./routes/contactsdelete/view.t1
 t1 View(m Model) {
   <h1>Delete</h1>
   <p>

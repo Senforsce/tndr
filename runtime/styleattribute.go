@@ -90,7 +90,7 @@ func sanitizeStyleAttributeValue(sb *strings.Builder, v any) error {
 		return err
 	}
 
-	_, err := sb.WriteString(TemplUnsupportedStyleAttributeValue)
+	_, err := sb.WriteString(TndrUnsupportedStyleAttributeValue)
 	return err
 }
 
@@ -213,5 +213,5 @@ func getJoinedErrorsFromValues(values ...any) error {
 	return errors.Join(errs...)
 }
 
-// TemplUnsupportedStyleAttributeValue is the default value returned for unsupported types.
-var TemplUnsupportedStyleAttributeValue = "zTemplUnsupportedStyleAttributeValue:Invalid;"
+// TndrUnsupportedStyleAttributeValue is the default value returned for unsupported types.
+var TndrUnsupportedStyleAttributeValue = "zTndrlUnsupportedStyleAttributeValue:Invalid;"

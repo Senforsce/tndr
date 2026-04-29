@@ -1,7 +1,7 @@
 -- in --
 package test
 
-t1 script(c templ.Component) {
+t1 script(c tndr.Component) {
 	@c() {
 		<script>
 			var a = {{ data }}
@@ -15,7 +15,7 @@ t1 script(c templ.Component) {
 -- out --
 package test
 
-t1 script(c templ.Component) {
+t1 script(c tndr.Component) {
 	@c() {
 		<script>
 			var a = {{ data }}
